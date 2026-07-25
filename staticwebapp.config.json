@@ -73,6 +73,11 @@
       "route": "/api/clearChecked",
       "methods": ["POST"],
       "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/api/bulkUpdateCategory",
+      "methods": ["PUT"],
+      "allowedRoles": ["anonymous"]
     }
   ],
   "globalHeaders": {
