@@ -1,14 +1,12 @@
 import { CATEGORIES, ListItem } from "../types/shared";
 
-/**
- * Comparator over category labels for a given store walking order. Categories
- * missing from the store's order (e.g. added to the config after the store was
- * created) are appended in config order; entirely unknown labels go last.
- */
-export function categoryComparator(order: string[]): (a: string, b: string) => number {
+export function categoryComparator(
+  order: string[],
+  allCategories: string[] = CATEGORIES as unknown as string[]
+): (a: string, b: string) => number {
   const merged = [
     ...order,
-    ...CATEGORIES.filter((category) => !order.includes(category)),
+    ...allCategories.filter((category) => !order.includes(category)),
   ];
   const index = new Map(merged.map((category, i) => [category, i]));
   return (a, b) => {

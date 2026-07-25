@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { CATEGORIES, Store } from "../types/shared";
+import { Store } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { apiDelete, apiPost, apiPut } from "../utils/api";
 import { Modal } from "./Modal";
@@ -8,24 +8,20 @@ import { UnavailablePicker } from "./UnavailablePicker";
 
 interface StoreFormProps {
   store: Store | null; // null = create new
+  categories: string[];
   foodItems: UseFoodItemsResult;
   onClose: () => void;
   onSaved: () => void;
 }
 
-/**
- * Initialize the working order from the saved one, appending any config
- * categories that were added after the store was saved — this self-heals
- * old stores whenever they are edited.
- */
-function initialOrder(store: Store | null): string[] {
+function initialOrder(store: Store | null, categories: string[]): string[] {
   const saved = store?.categoryOrder ?? [];
-  return [...saved, ...CATEGORIES.filter((category) => !saved.includes(category))];
+  return [...saved, ...categories.filter((category) => !saved.includes(category))];
 }
 
-export function StoreForm({ store, foodItems, onClose, onSaved }: StoreFormProps) {
+export function StoreForm({ store, categories, foodItems, onClose, onSaved }: StoreFormProps) {
   const [name, setName] = useState(store?.name ?? "");
-  const [order, setOrder] = useState<string[]>(() => initialOrder(store));
+  const [order, setOrder] = useState<string[]>(() => initialOrder(store, categories));
   const [unavailable, setUnavailable] = useState<Set<string>>(
     () => new Set(store?.unavailableItems ?? [])
   );

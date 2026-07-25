@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   AddListItemResponse,
   FoodItem,
@@ -8,7 +8,7 @@ import {
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseShoppingListResult } from "../hooks/useShoppingList";
 import { ApiError, apiDelete, apiPost, apiPut } from "../utils/api";
-import { getCategoryColor, getDefaultQuantity } from "../config";
+import { getCategoryColor, getDefaultQuantity, getAllCategories } from "../config";
 import { groupByCategory, sortByStoreOrder } from "../utils/sorting";
 import { AddItemBar } from "./AddItemBar";
 import { NewFoodItemModal } from "./NewFoodItemModal";
@@ -22,6 +22,11 @@ interface ListViewProps {
 export function ListView({ foodItems, list }: ListViewProps) {
   const [createName, setCreateName] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const categories = useMemo(
+    () => getAllCategories(foodItems.items.map((i) => i.category)),
+    [foodItems.items]
+  );
 
   async function addToList(foodItem: FoodItem) {
     setActionError(null);
@@ -175,6 +180,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
       {createName !== null && (
         <NewFoodItemModal
           initialName={createName}
+          categories={categories}
           onClose={() => setCreateName(null)}
           onCreate={createAndAdd}
         />

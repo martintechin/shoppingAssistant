@@ -1,16 +1,17 @@
 import { useState, FormEvent } from "react";
-import { CATEGORIES, FoodItem, UNITS } from "../types/shared";
+import { FoodItem, UNITS } from "../types/shared";
 import { apiDelete, apiPut } from "../utils/api";
 import { formatDate } from "../utils/dates";
 import { Modal } from "./Modal";
 
 interface FoodItemFormProps {
   item: FoodItem;
+  categories: string[];
   onClose: () => void;
   onSaved: () => void;
 }
 
-export function FoodItemForm({ item, onClose, onSaved }: FoodItemFormProps) {
+export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFormProps) {
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState(item.category);
   const [unit, setUnit] = useState(item.unit);
@@ -69,11 +70,10 @@ export function FoodItemForm({ item, onClose, onSaved }: FoodItemFormProps) {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            {/* Keep an unknown stored category selectable instead of silently remapping it */}
-            {!CATEGORIES.includes(category as any) && (
+            {!categories.includes(category) && (
               <option value={category}>{category}</option>
             )}
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>

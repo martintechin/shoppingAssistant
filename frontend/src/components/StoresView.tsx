@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Store } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseStoresResult } from "../hooks/useStores";
+import { getAllCategories } from "../config";
 import { StoreForm } from "./StoreForm";
 
 interface StoresViewProps {
@@ -10,6 +11,10 @@ interface StoresViewProps {
 }
 
 export function StoresView({ stores, foodItems }: StoresViewProps) {
+  const categories = useMemo(
+    () => getAllCategories(foodItems.items.map((i) => i.category)),
+    [foodItems.items]
+  );
   const [editing, setEditing] = useState<Store | "new" | null>(null);
 
   return (
@@ -48,6 +53,7 @@ export function StoresView({ stores, foodItems }: StoresViewProps) {
       {editing !== null && (
         <StoreForm
           store={editing === "new" ? null : editing}
+          categories={categories}
           foodItems={foodItems}
           onClose={() => setEditing(null)}
           onSaved={() => {
