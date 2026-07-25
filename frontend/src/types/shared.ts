@@ -150,6 +150,16 @@ export interface ClearCheckedResponse {
   removedCount: number;
 }
 
+export interface BulkUpdateCategoryRequest {
+  foodItemIds: string[];
+  category: string;
+}
+
+export interface BulkUpdateCategoryResponse {
+  success: boolean;
+  updatedCount: number;
+}
+
 export interface ActivateRequest {
   code: string;
   name?: string;

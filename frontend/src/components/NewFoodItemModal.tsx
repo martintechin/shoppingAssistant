@@ -1,14 +1,15 @@
 import { useState, FormEvent } from "react";
-import { CATEGORIES, UNITS } from "../types/shared";
+import { UNITS } from "../types/shared";
 import { Modal } from "./Modal";
 
 interface NewFoodItemModalProps {
   initialName: string;
+  categories: string[];
   onClose: () => void;
   onCreate: (name: string, category: string, unit: string) => Promise<void>;
 }
 
-export function NewFoodItemModal({ initialName, onClose, onCreate }: NewFoodItemModalProps) {
+export function NewFoodItemModal({ initialName, categories, onClose, onCreate }: NewFoodItemModalProps) {
   const [name, setName] = useState(initialName);
   const [category, setCategory] = useState<string>("Övrigt");
   const [unit, setUnit] = useState<string>("st");
@@ -56,7 +57,7 @@ export function NewFoodItemModal({ initialName, onClose, onCreate }: NewFoodItem
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
