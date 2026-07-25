@@ -112,11 +112,11 @@ jobs:
 
       - name: Install & build API
         working-directory: api
-        run: npm ci && npm run build
+        run: npm ci --omit=optional && npm run build
 
       - name: Prune API to production deps
         working-directory: api
-        run: npm prune --omit=dev
+        run: npm prune --omit=dev --omit=optional
 
       - name: Build Frontend
         working-directory: frontend
@@ -148,11 +148,11 @@ jobs:
 
       - name: Install & build API
         working-directory: api
-        run: npm ci && npm run build
+        run: npm ci --omit=optional && npm run build
 
       - name: Prune API to production deps
         working-directory: api
-        run: npm prune --omit=dev
+        run: npm prune --omit=dev --omit=optional
 
       - name: Build Frontend
         working-directory: frontend
