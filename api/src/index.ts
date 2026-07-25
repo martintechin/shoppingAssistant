@@ -14,3 +14,4 @@ import "./functions/addListItem.js";
 import "./functions/updateListItem.js";
 import "./functions/deleteListItem.js";
 import "./functions/clearChecked.js";
+import "./functions/bulkUpdateCategory.js";
