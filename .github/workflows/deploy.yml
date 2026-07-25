@@ -1,0 +1,169 @@
+name: Deploy Infrastructure & App
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '.claude/**'
+      - 'LICENSE'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_infra:
+        description: 'Deploy infrastructure (Bicep)'
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: rg-martin-shoppingAssistant-prod
+  LOCATION: swedencentral
+  SWA_NAME: swa-shoppingassistant
+
+jobs:
+  # ---------- Infrastructure (Bicep) ----------
+  infra:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_infra == 'true'
+    outputs:
+      deployment-token: ${{ steps.get-token.outputs.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep
+        run: |
+          az deployment group create \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file infra/main.bicep \
+            --parameters infra/parameters.json \
+            --parameters jwtSecret=${{ secrets.JWT_SECRET }}
+
+      - name: Get SWA deployment token
+        id: get-token
+        run: |
+          token=$(az staticwebapp secrets list \
+            --name ${{ env.SWA_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.apiKey" --output tsv)
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+  # ---------- Build & Test ----------
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            api/node_modules
+            frontend/node_modules
+          key: deps-${{ runner.os }}-${{ hashFiles('api/package-lock.json', 'frontend/package-lock.json') }}
+
+      - name: Install & build API
+        working-directory: api
+        run: npm ci && npm run build
+
+      - name: Install & build Frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Test API
+        working-directory: api
+        run: npm test
+
+      - name: Test Frontend
+        working-directory: frontend
+        run: npm test
+
+  # ---------- Deploy App (on push to main) ----------
+  deploy:
+    name: Deploy App to SWA
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install & build API
+        working-directory: api
+        run: npm ci && npm run build
+
+      - name: Prune API to production deps
+        working-directory: api
+        run: npm prune --omit=dev
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Deploy to Azure Static Web Apps
+        run: |
+          npx --yes @azure/static-web-apps-cli deploy \
+            ./frontend/dist \
+            --api-location ./api \
+            --api-language node \
+            --api-version 22 \
+            --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }} \
+            --env production
+
+  # ---------- Deploy App (after infra provisioning) ----------
+  deploy-after-infra:
+    name: Deploy App (after infra)
+    runs-on: ubuntu-latest
+    needs: [infra, build]
+    if: >-
+      github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_infra == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install & build API
+        working-directory: api
+        run: npm ci && npm run build
+
+      - name: Prune API to production deps
+        working-directory: api
+        run: npm prune --omit=dev
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+
+      - name: Deploy to Azure Static Web Apps
+        run: |
+          npx --yes @azure/static-web-apps-cli deploy \
+            ./frontend/dist \
+            --api-location ./api \
+            --api-language node \
+            --api-version 22 \
+            --deployment-token ${{ needs.infra.outputs.deployment-token }} \
+            --env production

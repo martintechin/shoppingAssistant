@@ -1,0 +1,159 @@
+/**
+ * Shared types for shoppingAssistant — the single source of truth.
+ * This file is copied into api/src/types/shared.ts and
+ * frontend/src/types/shared.ts by each package's sync-types script
+ * (wired into prebuild/predev/pretest). Edit ONLY this file.
+ */
+
+export const UNITS = ["st", "g", "kg", "l", "dl", "förp"] as const;
+export type Unit = (typeof UNITS)[number];
+
+export const CATEGORIES = [
+  "Frukt & Grönt",
+  "Bröd & Bageri",
+  "Mejeri & Ägg",
+  "Kött & Fågel",
+  "Fisk & Skaldjur",
+  "Skafferi",
+  "Fryst",
+  "Dryck",
+  "Godis & Snacks",
+  "Hushåll",
+  "Hygien",
+  "Övrigt",
+] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+// Categories and units travel as plain strings in storage and DTOs so that
+// existing data survives future changes to the lists above; the union types
+// are for UI pickers and write-time validation only.
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  category: string;
+  unit: string;
+  /** ISO timestamp of the last time this item was ticked off a shopping list */
+  lastBought?: string;
+  createdAt: string;
+}
+
+export interface FoodItemsResponse {
+  items: FoodItem[];
+}
+
+export interface StoreFoodItemRequest {
+  name: string;
+  category: string;
+  unit: string;
+}
+
+export interface StoreFoodItemResponse {
+  success: boolean;
+  item: FoodItem;
+}
+
+export interface UpdateFoodItemRequest {
+  id: string;
+  name?: string;
+  category?: string;
+  unit?: string;
+}
+
+export interface UpdateFoodItemResponse {
+  success: boolean;
+  item: FoodItem;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  /** Category labels in the order the departments appear along the walking route */
+  categoryOrder: string[];
+  /** FoodItem ids known to be unavailable in this store */
+  unavailableItems: string[];
+  createdAt: string;
+}
+
+export interface StoresResponse {
+  stores: Store[];
+}
+
+export interface StoreStoreRequest {
+  name: string;
+  categoryOrder: string[];
+  unavailableItems?: string[];
+}
+
+export interface StoreStoreResponse {
+  success: boolean;
+  store: Store;
+}
+
+export interface UpdateStoreRequest {
+  id: string;
+  name?: string;
+  categoryOrder?: string[];
+  unavailableItems?: string[];
+}
+
+export interface UpdateStoreResponse {
+  success: boolean;
+  store: Store;
+}
+
+export interface ListItem {
+  id: string;
+  foodItemId: string;
+  /** Denormalized from FoodItems at add time so the row survives item edits/deletes */
+  name: string;
+  category: string;
+  unit: string;
+  quantity: number;
+  checked: boolean;
+  addedAt: string;
+  checkedAt?: string;
+}
+
+export interface ListResponse {
+  items: ListItem[];
+}
+
+export interface AddListItemRequest {
+  foodItemId: string;
+  quantity?: number;
+}
+
+export interface AddListItemResponse {
+  success: boolean;
+  item: ListItem;
+  /** true when the add was merged into an existing unchecked row (quantity bumped) */
+  merged: boolean;
+}
+
+export interface UpdateListItemRequest {
+  id: string;
+  quantity?: number;
+  checked?: boolean;
+}
+
+export interface UpdateListItemResponse {
+  success: boolean;
+  item: ListItem;
+}
+
+export interface ClearCheckedResponse {
+  success: boolean;
+  removedCount: number;
+}
+
+export interface ActivateRequest {
+  code: string;
+  name?: string;
+}
+
+export interface ActivateResponse {
+  token: string;
+  deviceId: string;
+  expiresAt: string;
+}

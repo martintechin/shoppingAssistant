@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dev-dist/
+
+# Local development
+local.settings.json
+.azurite/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+*.tsbuildinfo

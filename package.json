@@ -1,0 +1,18 @@
+{
+  "name": "shopping-assistant",
+  "version": "1.0.0",
+  "description": "Mobile-friendly grocery shopping app (Azure Static Web App)",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:api && npm run build:frontend",
+    "build:api": "cd api && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:api && npm run test:frontend",
+    "test:api": "cd api && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "dev:api": "cd api && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed:codes": "cd api && npx tsx scripts/seed-codes.ts",
+    "seed:food": "cd api && npx tsx scripts/seed-food.ts"
+  }
+}

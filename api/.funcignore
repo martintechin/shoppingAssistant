@@ -1,0 +1,35 @@
+# Node.js
+node_modules
+
+# TypeScript source files (only deploy compiled JS)
+src
+*.ts
+!dist/**/*.ts
+tsconfig.json
+
+# Development and testing
+.vscode
+.vs
+*.local
+.env
+.env.local
+.env.*.local
+vitest.config.ts
+scripts
+
+# Git
+.git
+.gitignore
+
+# Azure Functions local development
+.azurite
+local.settings.json
+local.settings.json.example
+
+# Build artifacts that aren't needed
+npm-debug.log
+yarn-error.log
+
+# OS files
+.DS_Store
+Thumbs.db
