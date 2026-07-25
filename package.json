@@ -1,6 +1,6 @@
 {
   "name": "shopping-assistant",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mobile-friendly grocery shopping app (Azure Static Web App)",
   "private": true,
   "scripts": {
