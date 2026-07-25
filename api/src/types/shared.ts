@@ -113,6 +113,7 @@ export interface ListItem {
   checked: boolean;
   addedAt: string;
   checkedAt?: string;
+  note?: string;
 }
 
 export interface ListResponse {
@@ -122,6 +123,7 @@ export interface ListResponse {
 export interface AddListItemRequest {
   foodItemId: string;
   quantity?: number;
+  note?: string;
 }
 
 export interface AddListItemResponse {
@@ -135,6 +137,7 @@ export interface UpdateListItemRequest {
   id: string;
   quantity?: number;
   checked?: boolean;
+  note?: string;
 }
 
 export interface UpdateListItemResponse {

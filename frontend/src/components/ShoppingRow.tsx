@@ -20,7 +20,10 @@ export function ShoppingRow({ item, unavailable, onToggle }: ShoppingRowProps) {
       <span className="check-circle" aria-hidden="true">
         {item.checked ? "✓" : ""}
       </span>
-      <span className="shopping-row-name">{item.name}</span>
+      <div className="shopping-row-info">
+        <span className="shopping-row-name">{item.name}</span>
+        {item.note && <span className="shopping-row-note">{item.note}</span>}
+      </div>
       {unavailable && <span className="unavailable-badge">Finns ej här</span>}
       <span className="shopping-row-quantity">{formatQuantity(item.quantity, item.unit)}</span>
     </button>

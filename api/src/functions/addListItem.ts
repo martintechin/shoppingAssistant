@@ -14,7 +14,8 @@ function validateAddData(data: any): data is AddListItemRequest {
     typeof data.foodItemId === "string" &&
     data.foodItemId.length > 0 &&
     (data.quantity === undefined ||
-      (typeof data.quantity === "number" && data.quantity > 0 && data.quantity <= 999))
+      (typeof data.quantity === "number" && data.quantity > 0 && data.quantity <= 999)) &&
+    (data.note === undefined || typeof data.note === "string")
   );
 }
 
@@ -71,18 +72,17 @@ export async function addListItem(
       },
     })) {
       const newQuantity = (Number(entity.quantity) || 1) + (data.quantity ?? 1);
-      await client.updateEntity(
-        {
-          partitionKey: "list",
-          rowKey: String(entity.rowKey),
-          quantity: newQuantity,
-        },
-        "Merge"
-      );
+      const mergeUpdate = {
+        partitionKey: "list",
+        rowKey: String(entity.rowKey),
+        quantity: newQuantity,
+        ...(data.note !== undefined ? { note: data.note } : {}),
+      };
+      await client.updateEntity(mergeUpdate, "Merge");
 
       const body: AddListItemResponse = {
         success: true,
-        item: toListItem({ ...entity, quantity: newQuantity }),
+        item: toListItem({ ...entity, ...mergeUpdate }),
         merged: true,
       };
       return { status: 200, jsonBody: body };
@@ -100,6 +100,7 @@ export async function addListItem(
       quantity: data.quantity ?? 1,
       checked: false,
       addedAt,
+      note: data.note ?? "",
     };
 
     await client.createEntity(entity);

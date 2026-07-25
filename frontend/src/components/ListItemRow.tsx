@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ListItem } from "../types/shared";
 import { getUnitStep } from "../config";
 import { LOCALE } from "../config";
@@ -5,6 +6,7 @@ import { LOCALE } from "../config";
 interface ListItemRowProps {
   item: ListItem;
   onQuantity: (quantity: number) => void;
+  onNote: (note: string) => void;
   onDelete: () => void;
 }
 
@@ -12,15 +14,53 @@ export function formatQuantity(quantity: number, unit: string): string {
   return `${quantity.toLocaleString(LOCALE)} ${unit}`;
 }
 
-export function ListItemRow({ item, onQuantity, onDelete }: ListItemRowProps) {
+export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowProps) {
+  const [editingNote, setEditingNote] = useState(false);
+  const [draft, setDraft] = useState(item.note ?? "");
+
   const step = getUnitStep(item.unit);
-  // Guard against float drift from repeated 0.5/100 steps.
   const decrease = Math.round((item.quantity - step) * 100) / 100;
   const increase = Math.round((item.quantity + step) * 100) / 100;
 
+  function saveNote() {
+    const trimmed = draft.trim();
+    onNote(trimmed);
+    setEditingNote(false);
+  }
+
   return (
     <div className={`list-row ${item.checked ? "list-row-checked" : ""}`}>
-      <span className="list-row-name">{item.name}</span>
+      <div className="list-row-info">
+        <span className="list-row-name">{item.name}</span>
+        {editingNote ? (
+          <div className="note-edit">
+            <input
+              className="note-input"
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveNote();
+                if (e.key === "Escape") {
+                  setDraft(item.note ?? "");
+                  setEditingNote(false);
+                }
+              }}
+              onBlur={saveNote}
+              placeholder="Skriv en anteckning..."
+              autoFocus
+            />
+          </div>
+        ) : (
+          <button
+            className="note-toggle"
+            onClick={() => { setDraft(item.note ?? ""); setEditingNote(true); }}
+            aria-label="Redigera anteckning"
+          >
+            {item.note ? item.note : "Lägg till anteckning..."}
+          </button>
+        )}
+      </div>
       <div className="quantity-stepper">
         <button
           className="stepper-btn"

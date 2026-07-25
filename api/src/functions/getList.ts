@@ -16,6 +16,7 @@ export function toListItem(entity: any): ListItem {
     checked: Boolean(entity.checked),
     addedAt: String(entity.addedAt ?? ""),
     checkedAt: entity.checkedAt ? String(entity.checkedAt) : undefined,
+    note: entity.note ? String(entity.note) : undefined,
   };
 }
 
