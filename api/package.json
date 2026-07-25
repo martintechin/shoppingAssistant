@@ -1,0 +1,30 @@
+{
+  "name": "shoppingassistant-api",
+  "version": "1.0.0",
+  "description": "Azure Functions API for the shoppingAssistant grocery app",
+  "main": "dist/index.js",
+  "scripts": {
+    "sync-types": "node -e \"require('fs').cpSync('../shared/types.ts','src/types/shared.ts')\"",
+    "prebuild": "npm run sync-types",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start",
+    "pretest": "npm run sync-types",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@azure/data-tables": "^13.2.2",
+    "@azure/functions": "^4.5.0",
+    "jose": "^5.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.9"
+  },
+  "optionalDependencies": {
+    "azure-functions-core-tools": "^4.0.5382"
+  }
+}
