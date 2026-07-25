@@ -29,10 +29,10 @@ export async function updateListItem(
     if (!data || typeof data.id !== "string" || data.id.length === 0) {
       return { status: 400, jsonBody: { error: "Missing or invalid 'id' field" } };
     }
-    if (data.quantity === undefined && data.checked === undefined) {
+    if (data.quantity === undefined && data.checked === undefined && data.note === undefined) {
       return {
         status: 400,
-        jsonBody: { error: "At least one of 'quantity' or 'checked' must be provided" },
+        jsonBody: { error: "At least one of 'quantity', 'checked', or 'note' must be provided" },
       };
     }
     if (
@@ -46,6 +46,9 @@ export async function updateListItem(
     }
     if (data.checked !== undefined && typeof data.checked !== "boolean") {
       return { status: 400, jsonBody: { error: "Invalid 'checked': must be a boolean" } };
+    }
+    if (data.note !== undefined && typeof data.note !== "string") {
+      return { status: 400, jsonBody: { error: "Invalid 'note': must be a string" } };
     }
 
     const client = getTableClient(tableName);
@@ -66,6 +69,7 @@ export async function updateListItem(
     };
 
     if (data.quantity !== undefined) update.quantity = data.quantity;
+    if (data.note !== undefined) update.note = data.note;
 
     // Ticking an item off means it was bought: stamp lastBought on the food
     // item, but snapshot the previous value on the list row first so an

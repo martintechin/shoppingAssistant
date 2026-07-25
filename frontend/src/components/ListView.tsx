@@ -79,6 +79,23 @@ export function ListView({ foodItems, list }: ListViewProps) {
     }
   }
 
+  async function changeNote(item: ListItem, note: string) {
+    list.mutate((items) =>
+      items.map((i) => (i.id === item.id ? { ...i, note: note || undefined } : i))
+    );
+    try {
+      await apiPut("updateListItem", { id: item.id, note });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        list.refresh();
+        return;
+      }
+      list.mutate((items) =>
+        items.map((i) => (i.id === item.id ? { ...i, note: item.note } : i))
+      );
+    }
+  }
+
   async function removeItem(item: ListItem) {
     setActionError(null);
     try {
@@ -131,6 +148,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
                   key={item.id}
                   item={item}
                   onQuantity={(quantity) => changeQuantity(item, quantity)}
+                  onNote={(note) => changeNote(item, note)}
                   onDelete={() => removeItem(item)}
                 />
               ))}
@@ -145,6 +163,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
                   key={item.id}
                   item={item}
                   onQuantity={(quantity) => changeQuantity(item, quantity)}
+                  onNote={(note) => changeNote(item, note)}
                   onDelete={() => removeItem(item)}
                 />
               ))}
