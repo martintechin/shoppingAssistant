@@ -5,6 +5,12 @@ import { jwtVerify, SignJWT } from "jose";
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || "";
 const tableName = "DeviceAuth";
 
+// Bind tokens to this app so a token minted by a sibling app that shares the
+// same JWT_SECRET (e.g. familyCalendar's identical DeviceAuth layout) cannot be
+// replayed here. Verification requires both claims to match.
+const JWT_ISSUER = "shoppingassistant";
+const JWT_AUDIENCE = "shoppingassistant";
+
 let tableClient: TableClient;
 
 function getTableClient(): TableClient {
@@ -37,6 +43,8 @@ export async function verifyRequest(
   try {
     const { payload } = await jwtVerify(token, getJwtSecret(), {
       algorithms: ["HS256"],
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
     });
 
     const deviceId = payload.deviceId as string;
@@ -75,6 +83,8 @@ export async function createDeviceToken(deviceId: string): Promise<{
 
   const token = await new SignJWT({ deviceId })
     .setProtectedHeader({ alg: "HS256" })
+    .setIssuer(JWT_ISSUER)
+    .setAudience(JWT_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(expiresAt)
     .sign(secret);
