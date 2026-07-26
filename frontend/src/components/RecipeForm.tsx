@@ -2,11 +2,12 @@ import { useState, FormEvent } from "react";
 import { FoodItem, Recipe, RecipeIngredient, StoreFoodItemResponse } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { filterAndRank, normalize } from "../utils/text";
-import { getCategoryColor, getDefaultQuantity, getUnitStep, getAllCategories } from "../config";
+import { getCategoryColor, getDefaultQuantity, stepQuantity, getAllCategories } from "../config";
 import { apiPost, apiPut, ApiError } from "../utils/api";
 import { t } from "../i18n";
 import { Modal } from "./Modal";
 import { NewFoodItemModal } from "./NewFoodItemModal";
+import { EditableQuantity } from "./EditableQuantity";
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -137,7 +138,6 @@ export function RecipeForm({ recipe, foodItems, onSave, onClose }: RecipeFormPro
             <div className="recipe-ingredients-list">
               {ingredients.map((ing) => {
                 const food = foodItems.byId.get(ing.foodItemId);
-                const step = food ? getUnitStep(food.unit) : 1;
                 return (
                   <div key={ing.foodItemId} className="recipe-ingredient-row">
                     <span className="recipe-ingredient-name">
@@ -147,19 +147,21 @@ export function RecipeForm({ recipe, foodItems, onSave, onClose }: RecipeFormPro
                       <button
                         type="button"
                         className="stepper-btn"
-                        disabled={ing.quantity <= step}
-                        onClick={() => updateQuantity(ing.foodItemId, Math.max(step, ing.quantity - step))}
+                        disabled={ing.quantity <= 0.25}
+                        onClick={() => updateQuantity(ing.foodItemId, food ? stepQuantity(food.unit, ing.quantity, "down") : Math.max(1, ing.quantity - 1))}
                         aria-label={t("listItem.decrease")}
                       >
                         −
                       </button>
-                      <span className="quantity-label">
-                        {ing.quantity} {food?.unit ?? ""}
-                      </span>
+                      <EditableQuantity
+                        quantity={ing.quantity}
+                        unit={food?.unit ?? ""}
+                        onChange={(v) => updateQuantity(ing.foodItemId, v)}
+                      />
                       <button
                         type="button"
                         className="stepper-btn"
-                        onClick={() => updateQuantity(ing.foodItemId, ing.quantity + step)}
+                        onClick={() => updateQuantity(ing.foodItemId, food ? stepQuantity(food.unit, ing.quantity, "up") : ing.quantity + 1)}
                         aria-label={t("listItem.increase")}
                       >
                         +

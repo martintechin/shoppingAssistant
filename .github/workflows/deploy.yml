@@ -30,7 +30,6 @@ env:
   LOCATION: ${{ vars.LOCATION || 'swedencentral' }}
   SWA_LOCATION: ${{ vars.SWA_LOCATION || 'westeurope' }}
   APP_NAME: ${{ vars.APP_NAME || 'shoppingassistant' }}
-  OWNER_TAG: ${{ vars.OWNER_TAG || 'shoppingassistant' }}
   SWA_NAME: swa-${{ vars.APP_NAME || 'shoppingassistant' }}
 
 jobs:
@@ -64,7 +63,6 @@ jobs:
               appName="$APP_NAME" \
               location="$LOCATION" \
               swaLocation="$SWA_LOCATION" \
-              ownerTag="$OWNER_TAG" \
               jwtSecret="$JWT_SECRET" \
               appLanguage="$APP_LANGUAGE"
 

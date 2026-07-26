@@ -29,6 +29,28 @@ export function getUnitStep(unit: string): number {
   return UNIT_STEPS[unit] ?? 1;
 }
 
+const FRACTIONAL_SEQUENCE = [0.25, 0.5, 1];
+
+export function stepQuantity(unit: string, quantity: number, direction: "up" | "down"): number {
+  const base = UNIT_STEPS[unit] ?? 1;
+  if (base !== 1) {
+    const next = direction === "up" ? quantity + base : quantity - base;
+    return Math.round(next * 100) / 100;
+  }
+  if (direction === "up") {
+    if (quantity < 1) {
+      const next = FRACTIONAL_SEQUENCE.find((v) => v > quantity);
+      return next ?? quantity + 1;
+    }
+    return quantity + 1;
+  }
+  if (quantity > 1) return quantity - 1;
+  for (let i = FRACTIONAL_SEQUENCE.length - 1; i >= 0; i--) {
+    if (FRACTIONAL_SEQUENCE[i] < quantity) return FRACTIONAL_SEQUENCE[i];
+  }
+  return quantity;
+}
+
 export function getDefaultQuantity(unit: string): number {
   return getUnitStep(unit);
 }
