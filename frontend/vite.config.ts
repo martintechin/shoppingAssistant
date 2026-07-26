@@ -7,6 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // Emit an external registerSW.js instead of an inline registration
+      // script, so the strict CSP in staticwebapp.config.json
+      // (script-src 'self', no 'unsafe-inline') doesn't block it.
+      injectRegister: "script",
       manifest: {
         name: "Inköpslistan",
         short_name: "Inköp",
