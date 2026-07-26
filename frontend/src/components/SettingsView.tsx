@@ -2,9 +2,11 @@ import { useState } from "react";
 import { t } from "../i18n";
 import { FoodsView } from "./FoodsView";
 import { StoresView } from "./StoresView";
+import { DeviceTokensView } from "./DeviceTokensView";
 import type { UseFoodItemsResult } from "../hooks/useFoodItems";
 import type { UseShoppingListResult } from "../hooks/useShoppingList";
 import type { UseStoresResult } from "../hooks/useStores";
+import type { UseTokenExpiryResult } from "../hooks/useTokenExpiry";
 
 type SettingsSubView = "menu" | "foods" | "stores" | "deviceTokens";
 
@@ -12,6 +14,7 @@ interface SettingsViewProps {
   foodItems: UseFoodItemsResult;
   list: UseShoppingListResult;
   stores: UseStoresResult;
+  tokenExpiry: UseTokenExpiryResult;
 }
 
 const MENU_ITEMS: Array<{
@@ -24,7 +27,7 @@ const MENU_ITEMS: Array<{
   { id: "deviceTokens", labelKey: "settings.deviceTokens", icon: "📱" },
 ];
 
-export function SettingsView({ foodItems, list, stores }: SettingsViewProps) {
+export function SettingsView({ foodItems, list, stores, tokenExpiry }: SettingsViewProps) {
   const [subView, setSubView] = useState<SettingsSubView>("menu");
 
   if (subView === "foods") {
@@ -64,10 +67,7 @@ export function SettingsView({ foodItems, list, stores }: SettingsViewProps) {
         >
           {"← " + t("settings.back")}
         </button>
-        <div className="view-header">
-          <h1>{t("deviceTokens.title")}</h1>
-        </div>
-        <div className="empty-state">{t("deviceTokens.placeholder")}</div>
+        <DeviceTokensView tokenExpiry={tokenExpiry} />
       </div>
     );
   }

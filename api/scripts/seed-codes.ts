@@ -1,18 +1,9 @@
 import { TableClient } from "@azure/data-tables";
-import { randomInt } from "node:crypto";
+import { generateCode } from "../src/codeGen.js";
 
 const connectionString =
   process.env.AZURE_STORAGE_CONNECTION_STRING || "UseDevelopmentStorage=true";
 const tableName = "DeviceAuth";
-
-function generateCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  // Use a CSPRNG (crypto.randomInt) rather than Math.random so codes aren't
-  // predictable from one another once this generator is public.
-  const segment = () =>
-    Array.from({ length: 4 }, () => chars[randomInt(chars.length)]).join("");
-  return `${segment()}-${segment()}-${segment()}`;
-}
 
 async function main() {
   const count = parseInt(process.argv[2] || "3", 10);

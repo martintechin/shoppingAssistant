@@ -15,3 +15,7 @@ import "./functions/updateListItem.js";
 import "./functions/deleteListItem.js";
 import "./functions/clearChecked.js";
 import "./functions/bulkUpdateCategory.js";
+import "./functions/getDevices.js";
+import "./functions/generateCode.js";
+import "./functions/revokeDevice.js";
+import "./functions/renewToken.js";

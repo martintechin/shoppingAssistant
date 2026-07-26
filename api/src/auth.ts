@@ -1,9 +1,6 @@
 import { HttpRequest, InvocationContext } from "@azure/functions";
-import { TableClient } from "@azure/data-tables";
 import { jwtVerify, SignJWT } from "jose";
-
-const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || "";
-const tableName = "DeviceAuth";
+import { getTableClient } from "./tableClient.js";
 
 // Bind tokens to this app so a token minted by a sibling app that shares the
 // same JWT_SECRET and DeviceAuth layout cannot be replayed here. Verification
@@ -11,14 +8,7 @@ const tableName = "DeviceAuth";
 const JWT_ISSUER = "shoppingassistant";
 const JWT_AUDIENCE = "shoppingassistant";
 
-let tableClient: TableClient;
-
-function getTableClient(): TableClient {
-  if (!tableClient) {
-    tableClient = TableClient.fromConnectionString(connectionString, tableName);
-  }
-  return tableClient;
-}
+const LAST_USED_THROTTLE_MS = 5 * 60 * 1000;
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -52,12 +42,27 @@ export async function verifyRequest(
       return { authenticated: false };
     }
 
-    const client = getTableClient();
+    const client = getTableClient("DeviceAuth");
     const device = await client.getEntity("device", deviceId);
 
     if (device.status !== "active") {
       context.warn(`Device ${deviceId} is revoked`);
       return { authenticated: false };
+    }
+
+    const lastUsed = device.lastUsedAt as string | undefined;
+    const now = Date.now();
+    if (!lastUsed || now - new Date(lastUsed).getTime() > LAST_USED_THROTTLE_MS) {
+      client
+        .updateEntity(
+          {
+            partitionKey: "device",
+            rowKey: deviceId,
+            lastUsedAt: new Date(now).toISOString(),
+          },
+          "Merge"
+        )
+        .catch(() => {});
     }
 
     return { authenticated: true, deviceId };
