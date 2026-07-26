@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       site_url:
-        description: "Site URL to check (defaults to the SITE_URL repository variable)"
+        description: "Site URL to check (defaults to the SITE_URL repository secret)"
         required: false
 
 jobs:
@@ -13,9 +13,9 @@ jobs:
     steps:
       - name: Check security headers
         run: |
-          SITE_URL="${{ inputs.site_url || vars.SITE_URL }}"
+          SITE_URL="${{ inputs.site_url || secrets.SITE_URL }}"
           if [ -z "$SITE_URL" ]; then
-            echo "No site URL given: pass the site_url input or set the SITE_URL repository variable."
+            echo "No site URL given: pass the site_url input or set the SITE_URL repository secret."
             exit 1
           fi
           curl -sSI "$SITE_URL" | tee headers.txt

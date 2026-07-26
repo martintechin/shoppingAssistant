@@ -136,6 +136,10 @@ jobs:
         run: npm ci && npm run build
 
       - name: Deploy to Azure Static Web Apps
+        env:
+          # Referencing the secret registers its value with the runner, so the
+          # site URL is masked in this job's public logs.
+          SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           npx --yes @azure/static-web-apps-cli deploy \
             ./frontend/dist \
@@ -172,6 +176,8 @@ jobs:
         run: npm ci && npm run build
 
       - name: Deploy to Azure Static Web Apps
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           npx --yes @azure/static-web-apps-cli deploy \
             ./frontend/dist \
