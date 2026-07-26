@@ -17,7 +17,7 @@ const sv: Language = {
     "Hygien",
     "Övrigt",
   ],
-  units: ["st", "g", "kg", "l", "dl", "förp"],
+  units: ["st", "g", "kg", "l", "dl", "förp", "tsk", "msk"],
   unitSteps: {
     st: 1,
     "förp": 1,
@@ -25,6 +25,8 @@ const sv: Language = {
     l: 0.5,
     dl: 1,
     g: 100,
+    tsk: 1,
+    msk: 1,
   },
   categoryColors: {
     "Frukt & Grönt": "#388e3c",

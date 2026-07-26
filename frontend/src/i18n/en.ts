@@ -17,7 +17,7 @@ const en: Language = {
     "Hygiene",
     "Other",
   ],
-  units: ["pcs", "g", "kg", "l", "dl", "pkg"],
+  units: ["pcs", "g", "kg", "l", "dl", "pkg", "tsp", "tbsp"],
   unitSteps: {
     pcs: 1,
     pkg: 1,
@@ -25,6 +25,8 @@ const en: Language = {
     l: 0.5,
     dl: 1,
     g: 100,
+    tsp: 1,
+    tbsp: 1,
   },
   categoryColors: {
     "Fruits & Vegetables": "#388e3c",
