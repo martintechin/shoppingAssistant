@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
-import { FoodItem } from "../types/shared";
+import { useState, useMemo, useRef } from "react";
+import { FoodItem, ImportFoodItemsResponse } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseShoppingListResult } from "../hooks/useShoppingList";
 import { getCategoryColor, getAllCategories } from "../config";
 import { filterAndRank } from "../utils/text";
 import { formatRelativeDays } from "../utils/dates";
+import { apiPost } from "../utils/api";
+import { foodItemsToCsv, parseFoodItemsCsv, downloadCsv } from "../utils/csv";
 import { t } from "../i18n";
 import { FoodItemForm } from "./FoodItemForm";
 import { CategoryManager } from "./CategoryManager";
@@ -18,6 +20,9 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<FoodItem | null>(null);
   const [managingCategories, setManagingCategories] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = useMemo(
     () => getAllCategories(foodItems.items.map((i) => i.category)),
@@ -28,6 +33,41 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
   const shown = trimmed
     ? filterAndRank(foodItems.items, trimmed, (item) => item.name, 200)
     : foodItems.items;
+
+  function handleExport() {
+    const csv = foodItemsToCsv(foodItems.items);
+    downloadCsv(csv, "food-items.csv");
+  }
+
+  async function handleImport(file: File) {
+    setImporting(true);
+    setImportMsg(null);
+    try {
+      const text = await file.text();
+      const items = parseFoodItemsCsv(text);
+      if (items.length === 0) {
+        setImportMsg(t("foods.importFailed"));
+        return;
+      }
+      const result = await apiPost<ImportFoodItemsResponse>("importFoodItems", { items });
+      let msg = t("foods.importSuccess", {
+        created: result.created,
+        updated: result.updated,
+        skipped: result.skipped,
+      });
+      if (result.errors.length > 0) {
+        msg += " " + t("foods.importErrors", { errors: result.errors.join("; ") });
+      }
+      setImportMsg(msg);
+      foodItems.refresh();
+      list.refresh();
+    } catch (err) {
+      setImportMsg(err instanceof Error ? err.message : t("foods.importFailed"));
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   return (
     <div className="foods-view">
@@ -43,6 +83,33 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
           </button>
         </div>
       </div>
+
+      <div className="import-export-bar">
+        <button className="btn-secondary btn-small" onClick={handleExport} disabled={foodItems.items.length === 0}>
+          {t("foods.export")}
+        </button>
+        <button
+          className="btn-secondary btn-small"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={importing}
+        >
+          {importing ? t("foods.importing") : t("foods.import")}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImport(file);
+          }}
+        />
+      </div>
+
+      {importMsg && (
+        <div className="banner-info">{importMsg}</div>
+      )}
 
       <input
         type="text"

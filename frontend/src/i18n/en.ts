@@ -179,6 +179,12 @@ const en: Language = {
     "foods.empty": "Item database is empty.",
     "foods.boughtWhen": "Bought {when}",
     "foods.count": "{count} pcs",
+    "foods.export": "Export CSV",
+    "foods.import": "Import CSV",
+    "foods.importing": "Importing...",
+    "foods.importSuccess": "Import done: {created} created, {updated} updated, {skipped} skipped",
+    "foods.importFailed": "Import failed",
+    "foods.importErrors": "Errors: {errors}",
 
     // New food item modal
     "newFood.title": "New item",

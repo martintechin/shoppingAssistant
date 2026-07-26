@@ -179,6 +179,12 @@ const sv: Language = {
     "foods.empty": "Varudatabasen är tom.",
     "foods.boughtWhen": "Köpt {when}",
     "foods.count": "{count} st",
+    "foods.export": "Exportera CSV",
+    "foods.import": "Importera CSV",
+    "foods.importing": "Importerar...",
+    "foods.importSuccess": "Import klar: {created} skapade, {updated} uppdaterade, {skipped} hoppade över",
+    "foods.importFailed": "Import misslyckades",
+    "foods.importErrors": "Fel: {errors}",
 
     // New food item modal
     "newFood.title": "Ny vara",

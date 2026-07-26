@@ -46,6 +46,23 @@ export interface UpdateFoodItemResponse {
   item: FoodItem;
 }
 
+export interface ImportFoodItemsRequest {
+  items: {
+    id?: string;
+    name: string;
+    category: string;
+    unit: string;
+  }[];
+}
+
+export interface ImportFoodItemsResponse {
+  success: boolean;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+}
+
 export interface Store {
   id: string;
   name: string;
