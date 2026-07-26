@@ -9,6 +9,7 @@ on:
       - 'LICENSE'
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       deploy_infra:
@@ -77,10 +78,11 @@ jobs:
           echo "::add-mask::$token"
           echo "token=$token" >> "$GITHUB_OUTPUT"
 
-  # ---------- Build & Test ----------
+  # ---------- Build & Test (skip on PR close — nothing to build) ----------
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
     steps:
       - uses: actions/checkout@v4
 
@@ -192,3 +194,61 @@ jobs:
             --api-version 22 \
             --deployment-token ${{ needs.infra.outputs.deployment-token }} \
             --env production
+
+  # ---------- Deploy Preview (on PR open/update) ----------
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install & build API
+        working-directory: api
+        run: npm ci --omit=optional && npm run build
+
+      - name: Prune API to production deps
+        working-directory: api
+        run: npm prune --omit=dev --omit=optional
+
+      - name: Build Frontend
+        working-directory: frontend
+        env:
+          VITE_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
+        run: npm ci && npm run build
+
+      - name: Deploy to preview environment
+        run: |
+          npx --yes @azure/static-web-apps-cli deploy \
+            ./frontend/dist \
+            --api-location ./api \
+            --api-language node \
+            --api-version 22 \
+            --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }} \
+            --env "pull-${{ github.event.pull_request.number }}"
+
+  # ---------- Close Preview (on PR close/merge) ----------
+  close-preview:
+    name: Close Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete preview environment
+        run: |
+          az staticwebapp environment delete \
+            --name "$SWA_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --environment-name "pull-${{ github.event.pull_request.number }}" \
+            --yes
