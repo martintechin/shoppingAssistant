@@ -197,3 +197,42 @@ export interface DeleteCodeRequest {
 export interface DeleteCodeResponse {
   success: boolean;
 }
+
+// ── Recipes ──
+
+export interface RecipeIngredient {
+  foodItemId: string;
+  quantity: number;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  ingredients: RecipeIngredient[];
+  createdAt: string;
+}
+
+export interface RecipesResponse {
+  recipes: Recipe[];
+}
+
+export interface StoreRecipeRequest {
+  name: string;
+  ingredients: RecipeIngredient[];
+}
+
+export interface StoreRecipeResponse {
+  success: boolean;
+  recipe: Recipe;
+}
+
+export interface UpdateRecipeRequest {
+  id: string;
+  name?: string;
+  ingredients?: RecipeIngredient[];
+}
+
+export interface UpdateRecipeResponse {
+  success: boolean;
+  recipe: Recipe;
+}

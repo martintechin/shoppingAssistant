@@ -8,6 +8,7 @@ import { SettingsView } from "./components/SettingsView";
 import { useFoodItems } from "./hooks/useFoodItems";
 import { useShoppingList } from "./hooks/useShoppingList";
 import { useStores } from "./hooks/useStores";
+import { useRecipes } from "./hooks/useRecipes";
 import { useTokenExpiry } from "./hooks/useTokenExpiry";
 import { t } from "./i18n";
 
@@ -27,6 +28,7 @@ function AppShell() {
   const foodItems = useFoodItems();
   const list = useShoppingList();
   const stores = useStores();
+  const recipes = useRecipes();
   const tokenExpiry = useTokenExpiry();
 
   const uncheckedCount = list.items.filter((item) => !item.checked).length;
@@ -54,7 +56,9 @@ function AppShell() {
       <main className="view-container">
         {view === "list" && <ListView foodItems={foodItems} list={list} />}
         {view === "shop" && <ShoppingView list={list} stores={stores} />}
-        {view === "recipes" && <RecipesView />}
+        {view === "recipes" && (
+          <RecipesView foodItems={foodItems} list={list} recipes={recipes} />
+        )}
         {view === "settings" && (
           <SettingsView
             foodItems={foodItems}
