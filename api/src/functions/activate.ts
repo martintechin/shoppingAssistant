@@ -21,14 +21,33 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX_ATTEMPTS = 10;
 
 function getClientIp(request: HttpRequest): string {
+  // NOTE: X-Forwarded-For is client-controllable, so this limiter is
+  // defense-in-depth, not a hard guarantee — a caller can spoof the header for
+  // fresh buckets. The real protection against code guessing is the ~2^60
+  // activation-code entropy; this just slows naive brute force.
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    // First hop is the original client; strip any port suffix.
+    // First hop is the original client.
     const first = forwarded.split(",")[0].trim();
-    const ip = first.split(":")[0].trim();
+    const ip = stripPort(first);
     if (ip) return ip;
   }
   return "unknown";
+}
+
+// Extract the bare IP from a "host[:port]" token, correctly handling IPv6.
+// IPv4 "1.2.3.4:5678" -> "1.2.3.4"; bracketed "[::1]:5678" -> "::1"; a bare
+// IPv6 like "2001:db8::1" is returned unchanged (never split on its colons).
+function stripPort(token: string): string {
+  if (token.startsWith("[")) {
+    const end = token.indexOf("]");
+    return end > 0 ? token.slice(1, end) : token;
+  }
+  // More than one colon => bare IPv6 (no port to strip).
+  if (token.indexOf(":") !== token.lastIndexOf(":")) return token;
+  // Exactly one colon => IPv4:port.
+  const colon = token.indexOf(":");
+  return colon > 0 ? token.slice(0, colon) : token;
 }
 
 /**
