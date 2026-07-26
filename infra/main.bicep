@@ -14,9 +14,6 @@ param swaSku string = 'Free'
 @allowed(['centralus', 'eastus2', 'westus2', 'westeurope', 'eastasia'])
 param swaLocation string = 'westeurope'
 
-@description('Owner tag for policy compliance')
-param ownerTag string = 'shoppingassistant'
-
 @description('Secret used to sign JWT tokens for device authentication')
 @secure()
 param jwtSecret string
@@ -35,7 +32,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     name: 'Standard_LRS'
   }
   tags: {
-    owner: ownerTag
     app: appName
   }
   properties: {
@@ -74,7 +70,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
   name: 'swa-${appName}'
   location: swaLocation
   tags: {
-    owner: ownerTag
     app: appName
   }
   sku: {

@@ -3,9 +3,10 @@ import { Recipe, AddListItemResponse } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseShoppingListResult } from "../hooks/useShoppingList";
 import { apiPost, apiDelete } from "../utils/api";
-import { getCategoryColor, getUnitStep } from "../config";
+import { getCategoryColor, stepQuantity } from "../config";
 import { formatRelativeDays } from "../utils/dates";
 import { t } from "../i18n";
+import { EditableQuantity } from "./EditableQuantity";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -127,7 +128,6 @@ export function RecipeDetail({
         {recipe.ingredients.map((ing) => {
           const food = foodItems.byId.get(ing.foodItemId);
           const qty = quantities.get(ing.foodItemId) ?? ing.quantity;
-          const step = food ? getUnitStep(food.unit) : 1;
           const isSelected = selected.has(ing.foodItemId);
           const lastBought = food?.lastBought;
           const lastBoughtText = lastBought
@@ -161,19 +161,21 @@ export function RecipeDetail({
                 <button
                   type="button"
                   className="stepper-btn"
-                  disabled={qty <= step}
-                  onClick={() => updateQuantity(ing.foodItemId, Math.max(step, qty - step))}
+                  disabled={qty <= 0.25}
+                  onClick={() => updateQuantity(ing.foodItemId, food ? stepQuantity(food.unit, qty, "down") : Math.max(1, qty - 1))}
                   aria-label={t("listItem.decrease")}
                 >
                   −
                 </button>
-                <span className="quantity-label">
-                  {qty} {food?.unit ?? ""}
-                </span>
+                <EditableQuantity
+                  quantity={qty}
+                  unit={food?.unit ?? ""}
+                  onChange={(v) => updateQuantity(ing.foodItemId, v)}
+                />
                 <button
                   type="button"
                   className="stepper-btn"
-                  onClick={() => updateQuantity(ing.foodItemId, qty + step)}
+                  onClick={() => updateQuantity(ing.foodItemId, food ? stepQuantity(food.unit, qty, "up") : qty + 1)}
                   aria-label={t("listItem.increase")}
                 >
                   +

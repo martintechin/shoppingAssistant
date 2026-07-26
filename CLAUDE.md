@@ -15,7 +15,7 @@ Mobile-first grocery shopping PWA for one family: React 18 + Vite frontend, Azur
 | `npm test` / `npm run test:api` / `npm run test:frontend` | vitest suites |
 | `npm run build` | tsc build of both packages (frontend also `vite build`) |
 | `npm run seed:codes` | Create one-time activation codes (arg = count, default 3) |
-| `npm run seed:food` | Idempotent seed of ~220 food items (set `SEED_LANGUAGE=sv` for Swedish, default English) |
+| `npm run seed:food` | Idempotent seed of ~180 food items (set `SEED_LANGUAGE=sv` for Swedish, default English) |
 
 ## Shared types — edit ONLY `shared/types.ts`
 
@@ -28,6 +28,7 @@ Arrays are JSON-stringified strings; timestamps are ISO strings; row keys are `$
 - **FoodItems** (pk `item`): `name`, `nameLower` (locale-aware lowercase via `APP_LOCALE`, for duplicate checks — recompute on rename!), `category`, `unit`, `lastBought?`, `createdAt`.
 - **Stores** (pk `store`): `name`, `categoryOrder` (JSON string[] — the walking route), `unavailableItems` (JSON string[] of FoodItems row keys), `createdAt`.
 - **ShoppingList** (pk `list`, single partition so `submitTransaction` batch-deletes work): `foodItemId`, denormalized `name`/`category`/`unit`, `quantity`, `checked`, `addedAt`, `checkedAt?`, `prevLastBought?`.
+- **Recipes** (pk `recipe`): `name`, `ingredients` (JSON array of `{ foodItemId, quantity }`), `createdAt`.
 - **DeviceAuth**: partitions `code` (activation codes), `device` (revocable devices), `ratelimit` (IP windows).
 
 ## Key behaviors & invariants
@@ -37,6 +38,7 @@ Arrays are JSON-stringified strings; timestamps are ISO strings; row keys are `$
 - **categoryOrder is never validated against `CATEGORIES` server-side.** New config categories are reconciled client-side: appended at sort time (`utils/sorting.ts`) and merged into the editor when a store is edited (`StoreForm.initialOrder`).
 - **Deleting a food item** eagerly strips it from every store's `unavailableItems`; shopping-list rows survive on their denormalized copies (stale name after rename is accepted).
 - Recently-bought warning (`RECENTLY_BOUGHT_DAYS = 4` in `frontend/src/config.ts`) is based on ≤60s-stale polled data — accepted.
+- **Quantity stepping**: units with base step 1 (st/pcs, förp/pkg) support fractional quantities below 1 — the sequence is 1/4, 1/2, 1, 2, 3, … The quantity label is tappable for direct numeric entry in list items and recipes. Logic lives in `stepQuantity()` in `frontend/src/config.ts`.
 
 ## Language / i18n
 
@@ -51,15 +53,16 @@ English is the default language. Set GitHub repo variable `APP_LANGUAGE=sv` to d
 
 One self-contained file per endpoint in `api/src/functions/`, registered by side-effect import in `api/src/index.ts`. Handler shape: `verifyRequest` → 401 · parse/validate (type-guard, specific 400 messages) · try/catch → generic 500 (never leak internals). `authLevel: "anonymous"` everywhere — the app's own JWT layer (`api/src/auth.ts`, `X-Auth-Token` header) is the sole gate; SWA roles are unused. Escape every interpolated OData filter value with `escapeOData`.
 
-Endpoints: `activate`, `getFoodItems`/`storeFoodItem`/`updateFoodItem`/`deleteFoodItem`, `getStores`/`storeStore`/`updateStore`/`deleteStore`, `getList`/`addListItem`/`updateListItem`/`deleteListItem`/`clearChecked`. `storeFoodItem` returns **409 + `existingId`** on duplicate `nameLower`; the client adds the existing item instead.
+Endpoints: `activate`, `getFoodItems`/`storeFoodItem`/`updateFoodItem`/`deleteFoodItem`/`bulkUpdateCategory`, `getStores`/`storeStore`/`updateStore`/`deleteStore`, `getList`/`addListItem`/`updateListItem`/`deleteListItem`/`clearChecked`, `getRecipes`/`storeRecipe`/`updateRecipe`/`deleteRecipe`, `getCodes`/`generateCode`/`deleteCode`, `getDevices`/`revokeDevice`/`renewToken`. `storeFoodItem` returns **409 + `existingId`** on duplicate `nameLower`; the client adds the existing item instead.
 
 ## Frontend conventions
 
-- No router: `App.tsx` switches four views (List/Shop/Items/Stores) via the bottom `TabBar`; modals are overlays. Data hooks (`useFoodItems`, `useShoppingList`, `useStores`) are instantiated once in `AppShell` (inside the `ActivationGate`) and passed down; they poll every 60s and expose `refresh()`.
+- No router: `App.tsx` switches four views (List/Shop/Recipes/Settings) via the bottom `TabBar`; Settings contains sub-views for Foods, Stores, and Device management. Modals are overlays. Data hooks (`useFoodItems`, `useShoppingList`, `useStores`) are instantiated once in `AppShell` (inside the `ActivationGate`) and passed down; they poll every 60s and expose `refresh()`.
 - All fetches go through `utils/api.ts` (`authFetch` adds the token, 401 → `auth:expired` event re-gates the app; `apiRequest/apiPost/apiPut/apiDelete` unify error extraction into `ApiError`).
 - Autocomplete is **client-side** over the fully-cached food DB (`utils/text.ts`, prefix > substring ranking) — do not add a search endpoint.
 - Optimistic updates only for check/uncheck and quantity stepping (via `list.mutate`), revert on failure, silent `refresh()` on 404. Adds/deletes await + refresh.
 - Touch rules: ≥44-48px targets, 16px input font (iOS zoom), `dvh` modals, `touch-action: manipulation`, two-click inline confirm for destructive actions (no `window.confirm`).
+- `EditableQuantity` component (`frontend/src/components/EditableQuantity.tsx`): tappable quantity label that switches to a numeric input on tap. Used in `ListItemRow`, `RecipeDetail`, and `RecipeForm`.
 
 ## Testing
 
@@ -67,8 +70,8 @@ API tests mock `../tableClient.js` with the in-memory `src/testUtils/mockTableCl
 
 ## Auth flow
 
-Seed codes offline → user enters code in `ActivationGate` → `POST /api/activate` (IP rate-limited 10/15min) → 1-year HS256 JWT in localStorage → `X-Auth-Token` on every call → per-request revocation check against the `device` partition. Revoke a device by flipping its `status` to `revoked`.
+Seed codes offline → user enters code in `ActivationGate` → `POST /api/activate` (IP rate-limited 10/15min) → 1-year HS256 JWT in localStorage → `X-Auth-Token` on every call → per-request revocation check against the `device` partition. Revoke a device by flipping its `status` to `revoked`. Device management (view devices, revoke, generate new codes) is available in the Settings → Devices sub-view.
 
 ## Deployment
 
-GitHub Actions (`.github/workflows/deploy.yml`): build+test on PR/push; deploy to SWA via `swa-cli` on push to `main` (needs `AZURE_STATIC_WEB_APPS_API_TOKEN`); manual `workflow_dispatch` with `deploy_infra: true` provisions Bicep (needs OIDC secrets + `JWT_SECRET`). Set repo variable `APP_LANGUAGE` to `sv` for Swedish (default English). Local storage emulator is Azurite (`UseDevelopmentStorage=true`). **Never commit secrets, tokens or publish profiles.**
+GitHub Actions (`.github/workflows/deploy.yml`): build+test on PR/push; deploy to SWA via `swa-cli` on push to `main` (needs `AZURE_STATIC_WEB_APPS_API_TOKEN`); PR previews auto-deploy and clean up on close; manual `workflow_dispatch` with `deploy_infra: true` provisions Bicep (needs OIDC secrets + `JWT_SECRET`). Set repo variable `APP_LANGUAGE` to `sv` for Swedish (default English). Local storage emulator is Azurite (`UseDevelopmentStorage=true`). **Never commit secrets, tokens or publish profiles.**

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ListItem } from "../types/shared";
-import { getUnitStep } from "../config";
+import { stepQuantity } from "../config";
 import { LOCALE, t } from "../i18n";
+import { EditableQuantity } from "./EditableQuantity";
 
 interface ListItemRowProps {
   item: ListItem;
@@ -18,9 +19,8 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
   const [editingNote, setEditingNote] = useState(false);
   const [draft, setDraft] = useState(item.note ?? "");
 
-  const step = getUnitStep(item.unit);
-  const decrease = Math.round((item.quantity - step) * 100) / 100;
-  const increase = Math.round((item.quantity + step) * 100) / 100;
+  const decrease = stepQuantity(item.unit, item.quantity, "down");
+  const increase = stepQuantity(item.unit, item.quantity, "up");
 
   function saveNote() {
     const trimmed = draft.trim();
@@ -65,12 +65,12 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
         <button
           className="stepper-btn"
           onClick={() => onQuantity(decrease)}
-          disabled={decrease <= 0}
+          disabled={decrease >= item.quantity}
           aria-label={t("listItem.decrease")}
         >
           −
         </button>
-        <span className="quantity-label">{formatQuantity(item.quantity, item.unit)}</span>
+        <EditableQuantity quantity={item.quantity} unit={item.unit} onChange={onQuantity} />
         <button
           className="stepper-btn"
           onClick={() => onQuantity(increase)}

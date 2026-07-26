@@ -5,11 +5,14 @@ A mobile-friendly grocery shopping app for the family, built as an Azure Static 
 ## Features
 
 - **Shared shopping list** — every activated device sees and edits the same list, synced by polling.
-- **Food database with autocomplete** — every item has a category and a default unit (st, g, kg, l, dl, förp). Adding items is a fast type-ahead search; unknown items prompt for category + unit and are saved for next time. Pre-seeded with ~150 common Swedish grocery items.
+- **Food database with autocomplete** — every item has a category and a default unit (st/pcs, g, kg, l, dl, förp/pkg). Adding items is a fast type-ahead search; unknown items prompt for category + unit and are saved for next time. Pre-seeded with ~180 common grocery items.
+- **Fractional quantities** — items counted in whole units (st, förp, pcs, pkg) support half and quarter quantities (1/4, 1/2) below 1. Tap the quantity label to type a value directly.
 - **Duplicate-purchase protection** — the app tracks when each item was last bought (set when it's ticked off the list) and warns when you try to add something bought in the last few days.
 - **Stores with walking order** — add your frequent stores and arrange the produce departments in the order you walk through them. Mark items you know a store doesn't carry.
-- **Shopping mode** — pick the store you're in and the list sorts itself along your route. Items missing from that store are flagged "Finns ej här". Tap to tick items off; they stay visible with strike-through. "Rensa avprickade" clears them after checkout.
+- **Shopping mode** — pick the store you're in and the list sorts itself along your route. Items missing from that store are flagged. Tap to tick items off; they stay visible with strike-through. Clear checked items after checkout.
+- **Recipes** — save named recipes with ingredients from the food database. When cooking, select which ingredients to add to the shopping list, adjust quantities, and add them in one tap.
 - **PWA** — installable on the home screen, offline read of the last-known list.
+- **i18n** — English (default) and Swedish. Set `APP_LANGUAGE=sv` to deploy in Swedish.
 
 ## Architecture
 
@@ -17,7 +20,7 @@ A mobile-friendly grocery shopping app for the family, built as an Azure Static 
 |---|---|
 | Frontend | React 18 + Vite 5 + TypeScript, `vite-plugin-pwa`, no router/UI library |
 | API | Azure Functions v4 (Node 22, TypeScript), one file per endpoint |
-| Database | Azure Table Storage (`FoodItems`, `Stores`, `ShoppingList`, `DeviceAuth`) |
+| Database | Azure Table Storage (`FoodItems`, `Stores`, `ShoppingList`, `DeviceAuth`, `Recipes`) |
 | Auth | One-time activation codes → 1-year JWT (`jose`), `X-Auth-Token` header |
 | Infra | Bicep (storage account + SWA Free tier), GitHub Actions deploy |
 | Shared types | `shared/types.ts`, copied into both packages by `sync-types` scripts |
@@ -38,7 +41,7 @@ azurite --silent --location .azurite
 
 # 4. Seed activation codes and the food database
 npm run seed:codes    # prints 3 one-time codes
-npm run seed:food     # ~150 Swedish grocery items
+npm run seed:food     # ~180 grocery items (idempotent)
 
 # 5. API (separate terminal) — http://localhost:7071
 npm run dev:api
@@ -119,11 +122,11 @@ In **Settings → Secrets and variables → Actions**:
 | `LOCATION` | `swedencentral` | region for storage |
 | `SWA_LOCATION` | `westeurope` | Static Web Apps has limited regions; keep separate from `LOCATION` |
 | `APP_NAME` | `shoppingassistant` | base name for resources; the SWA is always `swa-${APP_NAME}` |
-| `OWNER_TAG` | `shoppingassistant` | Azure resource tag |
+| `APP_LANGUAGE` | `en` | `en` or `sv` — sets API locale and frontend build language |
 
 ### 4. Provision infrastructure
 
-Run the **Deploy Infrastructure & App** workflow manually (Actions → Run workflow) with `deploy_infra: true`. This provisions the storage account, four tables, the Static Web App, and its app settings, then deploys the app.
+Run the **Deploy Infrastructure & App** workflow manually (Actions → Run workflow) with `deploy_infra: true`. This provisions the storage account, five tables, the Static Web App, and its app settings, then deploys the app.
 
 ### 5. Save the deployment token
 
@@ -147,7 +150,7 @@ export AZURE_STORAGE_CONNECTION_STRING=$(az storage account show-connection-stri
   --name <storageAccountName> --query connectionString -o tsv)
 
 npm run seed:codes    # prints one-time activation codes
-npm run seed:food     # ~150 Swedish grocery items (idempotent)
+npm run seed:food     # ~180 grocery items (idempotent)
 ```
 
 The storage account name is generated (`st…` + a hash); find it with `az storage account list -g rg-shoppingassistant-prod --query "[].name" -o tsv`. **If `AZURE_STORAGE_CONNECTION_STRING` is unset the scripts silently seed the local Azurite emulator instead** — export it first.
@@ -156,9 +159,8 @@ The storage account name is generated (`st…` + a hash); find it with `az stora
 
 Beyond the repo Variables above, personalize:
 
-- `frontend/src/components/ActivationGate.tsx` — the `"t.ex. Martins mobil"` device-name placeholder.
+- `frontend/src/components/ActivationGate.tsx` — the device-name placeholder.
 - `frontend/vite.config.ts` and `frontend/index.html` — PWA name, title, theme color.
-- The UI text is Swedish only (no i18n); locale is `sv-SE` throughout.
 
 ### Managing devices and codes
 

@@ -383,12 +383,37 @@
   background: #ddd;
 }
 
+button.quantity-label {
+  min-width: 56px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  cursor: pointer;
+  font-family: inherit;
+  border-bottom: 1px dashed #ccc;
+}
+
 .quantity-label {
   min-width: 56px;
   text-align: center;
   font-size: 14px;
   color: #555;
   white-space: nowrap;
+}
+
+.quantity-input {
+  width: 56px;
+  text-align: center;
+  font-size: 16px;
+  padding: 2px 4px;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  outline: none;
+  font-family: inherit;
 }
 
 .row-delete {
