@@ -1,12 +1,11 @@
 import { getCategoryColor } from "../config";
+import { t } from "../i18n";
 
 interface CategoryOrderEditorProps {
   order: string[];
   onChange: (order: string[]) => void;
 }
 
-// Up/down arrow reordering — deliberate choice over drag-and-drop: reliable
-// on touch screens and needs no library.
 export function CategoryOrderEditor({ order, onChange }: CategoryOrderEditorProps) {
   function move(index: number, delta: number) {
     const target = index + delta;
@@ -30,7 +29,7 @@ export function CategoryOrderEditor({ order, onChange }: CategoryOrderEditorProp
             className="order-btn"
             onClick={() => move(index, -1)}
             disabled={index === 0}
-            aria-label={`Flytta ${category} uppåt`}
+            aria-label={t("catOrder.moveUp", { name: category })}
           >
             ▲
           </button>
@@ -39,7 +38,7 @@ export function CategoryOrderEditor({ order, onChange }: CategoryOrderEditorProp
             className="order-btn"
             onClick={() => move(index, 1)}
             disabled={index === order.length - 1}
-            aria-label={`Flytta ${category} nedåt`}
+            aria-label={t("catOrder.moveDown", { name: category })}
           >
             ▼
           </button>

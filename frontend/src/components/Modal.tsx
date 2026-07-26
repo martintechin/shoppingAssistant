@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { t } from "../i18n";
 
 interface ModalProps {
   title: string;
@@ -12,7 +13,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Stäng">
+          <button className="modal-close" onClick={onClose} aria-label={t("modal.close")}>
             ✕
           </button>
         </div>

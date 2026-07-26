@@ -1,11 +1,18 @@
 import { TableClient } from "@azure/data-tables";
-import { FOOD_ITEMS } from "./food-data";
+
+const LANG_TO_LOCALE: Record<string, string> = { en: "en-US", sv: "sv-SE" };
+const seedLanguage = process.env.SEED_LANGUAGE || "en";
+const locale = LANG_TO_LOCALE[seedLanguage] || "en-US";
 
 const connectionString =
   process.env.AZURE_STORAGE_CONNECTION_STRING || "UseDevelopmentStorage=true";
 const tableName = "FoodItems";
 
 async function main() {
+  const { FOOD_ITEMS } = seedLanguage === "sv"
+    ? await import("./food-data-sv")
+    : await import("./food-data-en");
+
   const client = TableClient.fromConnectionString(connectionString, tableName);
 
   try {
@@ -14,8 +21,6 @@ async function main() {
     if (error.statusCode !== 409) throw error;
   }
 
-  // Idempotent: match on lowercase name and only insert what's missing, so
-  // re-running never overwrites user edits or lastBought timestamps.
   const existing = new Set<string>();
   for await (const entity of client.listEntities({
     queryOptions: { filter: "PartitionKey eq 'item'" },
@@ -25,7 +30,7 @@ async function main() {
 
   let created = 0;
   for (const item of FOOD_ITEMS) {
-    const nameLower = item.name.toLocaleLowerCase("sv-SE");
+    const nameLower = item.name.toLocaleLowerCase(locale);
     if (existing.has(nameLower)) continue;
 
     await client.createEntity({
@@ -42,7 +47,7 @@ async function main() {
   }
 
   console.log(
-    `Seeded ${created} new food item(s); ${FOOD_ITEMS.length - created} already existed.`
+    `[${seedLanguage}] Seeded ${created} new food item(s); ${FOOD_ITEMS.length - created} already existed.`
   );
 }
 

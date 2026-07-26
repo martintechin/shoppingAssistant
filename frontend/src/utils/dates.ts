@@ -1,6 +1,5 @@
-import { LOCALE } from "../config";
+import { LOCALE, t } from "../i18n";
 
-/** Whole days since the given ISO timestamp; Infinity for missing/invalid input. */
 export function daysSince(iso: string | undefined): number {
   if (!iso) return Infinity;
   const then = new Date(iso).getTime();
@@ -8,12 +7,11 @@ export function daysSince(iso: string | undefined): number {
   return Math.floor((Date.now() - then) / 86_400_000);
 }
 
-/** "idag", "igår", "för 2 dagar sedan" … empty string for missing input. */
 export function formatRelativeDays(iso: string | undefined): string {
   const days = daysSince(iso);
   if (!Number.isFinite(days)) return "";
-  if (days <= 0) return "idag";
-  if (days === 1) return "igår";
+  if (days <= 0) return t("date.today");
+  if (days === 1) return t("date.yesterday");
   return new Intl.RelativeTimeFormat(LOCALE, { numeric: "always" }).format(-days, "day");
 }
 

@@ -2,7 +2,8 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import { verifyRequest } from "../auth.js";
 import { escapeOData } from "../odata.js";
 import { ensureTableExists, generateRowKey, getTableClient } from "../tableClient.js";
-import { FoodItem, StoreFoodItemRequest, StoreFoodItemResponse, UNITS } from "../types/shared.js";
+import { FoodItem, StoreFoodItemRequest, StoreFoodItemResponse } from "../types/shared.js";
+import { APP_LOCALE } from "../locale.js";
 
 const tableName = "FoodItems";
 
@@ -16,7 +17,8 @@ function validateFoodItemData(data: any): data is StoreFoodItemRequest {
     data.category.trim().length > 0 &&
     data.category.trim().length <= 50 &&
     typeof data.unit === "string" &&
-    (UNITS as readonly string[]).includes(data.unit)
+    data.unit.length > 0 &&
+    data.unit.length <= 10
   );
 }
 
@@ -43,13 +45,13 @@ export async function storeFoodItem(
       return {
         status: 400,
         jsonBody: {
-          error: `Invalid food item: 'name' (1-100 chars), 'category' (1-50 chars) and 'unit' (one of ${UNITS.join(", ")}) are required`,
+          error: "Invalid food item: 'name' (1-100 chars), 'category' (1-50 chars) and 'unit' (1-10 chars) are required",
         },
       };
     }
 
     const name = data.name.trim();
-    const nameLower = name.toLocaleLowerCase("sv-SE");
+    const nameLower = name.toLocaleLowerCase(APP_LOCALE);
     const client = getTableClient(tableName);
     await ensureTableExists(client);
 

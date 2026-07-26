@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 export type View = "list" | "shop" | "foods" | "stores";
 
 interface TabBarProps {
@@ -6,11 +8,11 @@ interface TabBarProps {
   listCount: number;
 }
 
-const TABS: Array<{ id: View; label: string; icon: string }> = [
-  { id: "list", label: "Lista", icon: "📝" },
-  { id: "shop", label: "Handla", icon: "🛒" },
-  { id: "foods", label: "Varor", icon: "🥕" },
-  { id: "stores", label: "Butiker", icon: "🏬" },
+const TABS: Array<{ id: View; labelKey: string; icon: string }> = [
+  { id: "list", labelKey: "tab.list", icon: "📝" },
+  { id: "shop", labelKey: "tab.shop", icon: "🛒" },
+  { id: "foods", labelKey: "tab.items", icon: "🥕" },
+  { id: "stores", labelKey: "tab.stores", icon: "🏬" },
 ];
 
 export function TabBar({ view, onChange, listCount }: TabBarProps) {
@@ -29,7 +31,7 @@ export function TabBar({ view, onChange, listCount }: TabBarProps) {
               <span className="tab-badge">{listCount}</span>
             )}
           </span>
-          <span className="tab-label">{tab.label}</span>
+          <span className="tab-label">{t(tab.labelKey)}</span>
         </button>
       ))}
     </nav>

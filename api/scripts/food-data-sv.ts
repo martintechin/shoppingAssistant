@@ -1,9 +1,7 @@
-import { Category, Unit } from "../src/types/shared";
-
 export interface SeedFoodItem {
   name: string;
-  category: Category;
-  unit: Unit;
+  category: string;
+  unit: string;
 }
 
 // Seed data for the food database: common Swedish grocery items with a

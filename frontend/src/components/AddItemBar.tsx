@@ -3,6 +3,7 @@ import { FoodItem, ListItem } from "../types/shared";
 import { filterAndRank, normalize } from "../utils/text";
 import { daysSince, formatRelativeDays } from "../utils/dates";
 import { RECENTLY_BOUGHT_DAYS, getCategoryColor } from "../config";
+import { t } from "../i18n";
 
 interface AddItemBarProps {
   items: FoodItem[];
@@ -34,8 +35,6 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
     setConfirming(null);
   }
 
-  // Recently bought items get a confirm step so duplicates aren't added by
-  // reflex — the whole point of tracking lastBought.
   function choose(item: FoodItem) {
     if (isRecentlyBought(item)) {
       setConfirming(item);
@@ -70,7 +69,7 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
             }
           }
         }}
-        placeholder="Lägg till vara..."
+        placeholder={t("addItem.placeholder")}
         autoComplete="off"
         enterKeyHint="done"
       />
@@ -80,15 +79,17 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
           {confirming ? (
             <div className="suggestion-confirm">
               <span className="confirm-text">
-                <strong>{confirming.name}</strong> köptes{" "}
-                {formatRelativeDays(confirming.lastBought)}
+                {t("addItem.boughtRecently", {
+                  name: confirming.name,
+                  when: formatRelativeDays(confirming.lastBought),
+                })}
               </span>
               <div className="confirm-actions">
                 <button className="btn-small btn-primary" onClick={() => commit(confirming)}>
-                  Lägg till ändå
+                  {t("addItem.addAnyway")}
                 </button>
                 <button className="btn-small" onClick={() => setConfirming(null)}>
-                  Avbryt
+                  {t("addItem.cancel")}
                 </button>
               </div>
             </div>
@@ -99,11 +100,11 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
                   <span className="suggestion-main">
                     <span className="suggestion-name">{item.name}</span>
                     {onListIds.has(item.id) && (
-                      <span className="suggestion-onlist">på listan</span>
+                      <span className="suggestion-onlist">{t("addItem.onList")}</span>
                     )}
                     {isRecentlyBought(item) && (
                       <span className="suggestion-recent">
-                        Köpt {formatRelativeDays(item.lastBought)}
+                        {t("addItem.boughtWhen", { when: formatRelativeDays(item.lastBought) })}
                       </span>
                     )}
                   </span>
@@ -117,7 +118,7 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
               ))}
               {!hasExactMatch && (
                 <button className="suggestion suggestion-create" onClick={handleCreate}>
-                  + Skapa &quot;{trimmed}&quot;
+                  {t("addItem.create", { name: trimmed })}
                 </button>
               )}
             </>

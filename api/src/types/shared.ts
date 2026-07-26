@@ -5,28 +5,9 @@
  * (wired into prebuild/predev/pretest). Edit ONLY this file.
  */
 
-export const UNITS = ["st", "g", "kg", "l", "dl", "förp"] as const;
-export type Unit = (typeof UNITS)[number];
-
-export const CATEGORIES = [
-  "Frukt & Grönt",
-  "Bröd & Bageri",
-  "Mejeri & Ägg",
-  "Kött & Fågel",
-  "Fisk & Skaldjur",
-  "Skafferi",
-  "Fryst",
-  "Dryck",
-  "Godis & Snacks",
-  "Hushåll",
-  "Hygien",
-  "Övrigt",
-] as const;
-export type Category = (typeof CATEGORIES)[number];
-
-// Categories and units travel as plain strings in storage and DTOs so that
-// existing data survives future changes to the lists above; the union types
-// are for UI pickers and write-time validation only.
+// Categories and units are plain strings in storage and DTOs. Concrete
+// values are language-dependent and live in the i18n layer (frontend) and
+// seed data (API). The type aliases below keep call-sites readable.
 
 export interface FoodItem {
   id: string;

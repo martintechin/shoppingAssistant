@@ -1,0 +1,198 @@
+import { Language } from "./index";
+
+const en: Language = {
+  locale: "en-US",
+  sortLocale: "en",
+  categories: [
+    "Fruits & Vegetables",
+    "Bread & Bakery",
+    "Dairy & Eggs",
+    "Meat & Poultry",
+    "Fish & Seafood",
+    "Pantry",
+    "Frozen",
+    "Beverages",
+    "Candy & Snacks",
+    "Household",
+    "Hygiene",
+    "Other",
+  ],
+  units: ["pcs", "g", "kg", "l", "dl", "pkg"],
+  unitSteps: {
+    pcs: 1,
+    pkg: 1,
+    kg: 0.5,
+    l: 0.5,
+    dl: 1,
+    g: 100,
+  },
+  categoryColors: {
+    "Fruits & Vegetables": "#388e3c",
+    "Bread & Bakery": "#8d6e63",
+    "Dairy & Eggs": "#1976d2",
+    "Meat & Poultry": "#d32f2f",
+    "Fish & Seafood": "#0288d1",
+    Pantry: "#f57c00",
+    Frozen: "#00acc1",
+    Beverages: "#7b1fa2",
+    "Candy & Snacks": "#e91e63",
+    Household: "#5d4037",
+    Hygiene: "#00897b",
+    Other: "#616161",
+  },
+  ui: {
+    // Activation gate
+    "activation.title": "Shopping List",
+    "activation.description": "Enter activation code to get started",
+    "activation.codeLabel": "Activation code",
+    "activation.deviceLabel": "Device name (optional)",
+    "activation.devicePlaceholder": "e.g. Martin's phone",
+    "activation.emptyCode": "Enter an activation code",
+    "activation.failed": "Activation failed",
+    "activation.submitting": "Activating...",
+    "activation.submit": "Activate",
+
+    // Tab bar
+    "tab.list": "List",
+    "tab.shop": "Shop",
+    "tab.items": "Items",
+    "tab.stores": "Stores",
+
+    // Add item bar
+    "addItem.placeholder": "Add item...",
+    "addItem.boughtRecently": "{name} was bought {when}",
+    "addItem.addAnyway": "Add anyway",
+    "addItem.cancel": "Cancel",
+    "addItem.create": "+ Create \"{name}\"",
+    "addItem.onList": "on list",
+    "addItem.boughtWhen": "Bought {when}",
+
+    // List view
+    "list.loading": "Loading list...",
+    "list.empty": "The list is empty. Search for an item above to add it.",
+    "list.couldNotAdd": "Could not add the item",
+    "list.couldNotRemove": "Could not remove the item",
+    "list.checkedSection": "Checked off",
+
+    // List item row
+    "listItem.notePlaceholder": "Write a note...",
+    "listItem.editNote": "Edit note",
+    "listItem.addNote": "Add note...",
+    "listItem.decrease": "Decrease quantity",
+    "listItem.increase": "Increase quantity",
+    "listItem.remove": "Remove {name}",
+
+    // Food item form
+    "foodForm.editTitle": "Edit item",
+    "foodForm.nameLabel": "Name",
+    "foodForm.categoryLabel": "Category",
+    "foodForm.unitLabel": "Unit",
+    "foodForm.emptyName": "Enter a name",
+    "foodForm.saveFailed": "Could not save the item",
+    "foodForm.deleteFailed": "Could not delete the item",
+    "foodForm.lastBought": "Last bought: {date}",
+    "foodForm.confirmDelete": "Confirm deletion",
+    "foodForm.delete": "Delete",
+    "foodForm.cancel": "Cancel",
+    "foodForm.saving": "Saving...",
+    "foodForm.save": "Save",
+
+    // Foods view
+    "foods.title": "Items",
+    "foods.categories": "Categories",
+    "foods.searchPlaceholder": "Search item database...",
+    "foods.loading": "Loading items...",
+    "foods.noMatch": "No match.",
+    "foods.empty": "Item database is empty.",
+    "foods.boughtWhen": "Bought {when}",
+    "foods.count": "{count} pcs",
+
+    // New food item modal
+    "newFood.title": "New item",
+    "newFood.emptyName": "Enter a name",
+    "newFood.createFailed": "Could not create the item",
+    "newFood.cancel": "Cancel",
+    "newFood.saving": "Saving...",
+    "newFood.submit": "Create and add",
+
+    // Shopping row
+    "shopping.unavailable": "Not here",
+
+    // Shopping view
+    "shop.hintSelectStore": "Select a store to sort the list by your route through the store.",
+    "shop.hintAddStore": "Add a store under the Stores tab to sort the list by your route through the store and see which items are missing there.",
+    "shop.loading": "Loading list...",
+    "shop.empty": "The list is empty — nothing to shop!",
+    "shop.updateFailed": "Could not update the item",
+    "shop.clearFailed": "Could not clear the list",
+    "shop.confirmClear": "Confirm clear",
+    "shop.cancel": "Cancel",
+    "shop.clearChecked": "Clear checked ({count})",
+
+    // Category manager
+    "catManager.newTitle": "New category",
+    "catManager.nameLabel": "Name",
+    "catManager.alreadyExists": "Category already exists",
+    "catManager.back": "Back",
+    "catManager.createAndAssign": "Create and assign items",
+    "catManager.assignTitle": "Assign to \"{name}\"",
+    "catManager.alreadyIn": "Already in category ({count})",
+    "catManager.selectItems": "Select items to move here",
+    "catManager.filterPlaceholder": "Filter items...",
+    "catManager.selectAll": "Select all visible",
+    "catManager.deselectAll": "Deselect all",
+    "catManager.selectedCount": "{count} selected",
+    "catManager.noMatch": "No match.",
+    "catManager.noItems": "No items to move.",
+    "catManager.moveOne": "Move 1 item",
+    "catManager.moveMany": "Move {count} items",
+    "catManager.saving": "Saving...",
+    "catManager.updateFailed": "Could not update",
+    "catManager.title": "Categories",
+    "catManager.itemCount": "{count} items",
+    "catManager.close": "Close",
+    "catManager.newCategory": "+ New category",
+
+    // Category order editor
+    "catOrder.moveUp": "Move {name} up",
+    "catOrder.moveDown": "Move {name} down",
+
+    // Store form
+    "storeForm.newTitle": "New store",
+    "storeForm.editTitle": "Edit store",
+    "storeForm.nameLabel": "Name",
+    "storeForm.namePlaceholder": "e.g. Whole Foods Market",
+    "storeForm.departmentOrder": "Department order (your route through the store)",
+    "storeForm.unavailableItems": "Items missing from the store",
+    "storeForm.emptyName": "Enter a store name",
+    "storeForm.saveFailed": "Could not save the store",
+    "storeForm.deleteFailed": "Could not delete the store",
+    "storeForm.confirmDelete": "Confirm deletion",
+    "storeForm.delete": "Delete",
+    "storeForm.cancel": "Cancel",
+    "storeForm.saving": "Saving...",
+    "storeForm.save": "Save",
+
+    // Stores view
+    "stores.title": "Stores",
+    "stores.newStore": "+ New store",
+    "stores.loading": "Loading stores...",
+    "stores.empty": "No stores yet. Add your regular stores and specify the department order along your route through the store.",
+    "stores.departments": "{count} departments",
+    "stores.itemsMissing": "{count} items missing",
+
+    // Unavailable picker
+    "unavailable.placeholder": "Search item to mark as missing...",
+    "unavailable.noMatch": "No match",
+    "unavailable.removeLabel": "Remove {name} from missing items",
+
+    // Modal
+    "modal.close": "Close",
+
+    // Dates
+    "date.today": "today",
+    "date.yesterday": "yesterday",
+  },
+};
+
+export default en;

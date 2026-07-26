@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FoodItem } from "../types/shared";
 import { filterAndRank } from "../utils/text";
+import { t } from "../i18n";
 
 interface UnavailablePickerProps {
   foodItems: FoodItem[];
@@ -25,7 +26,7 @@ export function UnavailablePicker({ foodItems, selected, onToggle }: Unavailable
               type="button"
               className="unavailable-chip"
               onClick={() => onToggle(item.id)}
-              aria-label={`Ta bort ${item.name} från saknade varor`}
+              aria-label={t("unavailable.removeLabel", { name: item.name })}
             >
               {item.name} ✕
             </button>
@@ -37,14 +38,14 @@ export function UnavailablePicker({ foodItems, selected, onToggle }: Unavailable
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Sök vara att markera som saknad..."
+        placeholder={t("unavailable.placeholder")}
         autoComplete="off"
       />
 
       {trimmed && (
         <div className="picker-results">
           {matches.length === 0 ? (
-            <div className="picker-empty">Ingen träff</div>
+            <div className="picker-empty">{t("unavailable.noMatch")}</div>
           ) : (
             matches.map((item) => (
               <button
