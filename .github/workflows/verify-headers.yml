@@ -1,17 +1,11 @@
 name: Verify security headers
 
 on:
-  push:
-    branches:
-      - claude/publish-md-remaining-tuxz7n
-    paths:
-      - .github/workflows/verify-headers.yml
   workflow_dispatch:
     inputs:
       site_url:
-        description: "Site URL to check"
+        description: "Site URL to check (defaults to the SITE_URL repository variable)"
         required: false
-        default: "https://icy-desert-0015e7303.7.azurestaticapps.net"
 
 jobs:
   check:
@@ -19,7 +13,11 @@ jobs:
     steps:
       - name: Check security headers
         run: |
-          SITE_URL="${{ inputs.site_url || 'https://icy-desert-0015e7303.7.azurestaticapps.net' }}"
+          SITE_URL="${{ inputs.site_url || vars.SITE_URL }}"
+          if [ -z "$SITE_URL" ]; then
+            echo "No site URL given: pass the site_url input or set the SITE_URL repository variable."
+            exit 1
+          fi
           curl -sSI "$SITE_URL" | tee headers.txt
           status=0
           for h in content-security-policy strict-transport-security x-frame-options; do
