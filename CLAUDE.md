@@ -4,7 +4,7 @@ Developer/agent brief for shoppingAssistant. This is the authoritative doc; keep
 
 ## What this is
 
-Mobile-first grocery shopping PWA for one family, cloned architecturally from familyCalendar: React 18 + Vite frontend, Azure Functions v4 (Node 22, TS) API, Azure Table Storage, deployed as an Azure Static Web App.
+Mobile-first grocery shopping PWA for one family: React 18 + Vite frontend, Azure Functions v4 (Node 22, TS) API, Azure Table Storage, deployed as an Azure Static Web App.
 
 ## Commands
 
@@ -28,7 +28,7 @@ Arrays are JSON-stringified strings; timestamps are ISO strings; row keys are `$
 - **FoodItems** (pk `item`): `name`, `nameLower` (sv-SE lowercase, for duplicate checks — recompute on rename!), `category`, `unit`, `lastBought?`, `createdAt`.
 - **Stores** (pk `store`): `name`, `categoryOrder` (JSON string[] — the walking route), `unavailableItems` (JSON string[] of FoodItems row keys), `createdAt`.
 - **ShoppingList** (pk `list`, single partition so `submitTransaction` batch-deletes work): `foodItemId`, denormalized `name`/`category`/`unit`, `quantity`, `checked`, `addedAt`, `checkedAt?`, `prevLastBought?`.
-- **DeviceAuth**: partitions `code` (activation codes), `device` (revocable devices), `ratelimit` (IP windows) — identical to familyCalendar.
+- **DeviceAuth**: partitions `code` (activation codes), `device` (revocable devices), `ratelimit` (IP windows).
 
 ## Key behaviors & invariants
 
