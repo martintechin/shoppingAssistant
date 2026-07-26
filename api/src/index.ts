@@ -5,6 +5,7 @@ import "./functions/getFoodItems.js";
 import "./functions/storeFoodItem.js";
 import "./functions/updateFoodItem.js";
 import "./functions/deleteFoodItem.js";
+import "./functions/importFoodItems.js";
 import "./functions/getStores.js";
 import "./functions/storeStore.js";
 import "./functions/updateStore.js";
