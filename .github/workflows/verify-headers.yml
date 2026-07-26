@@ -1,0 +1,27 @@
+name: Verify security headers
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Site URL to check"
+        required: false
+        default: "https://icy-desert-0015e7303.7.azurestaticapps.net"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check security headers
+        run: |
+          curl -sSI "${{ inputs.site_url }}" | tee headers.txt
+          status=0
+          for h in content-security-policy strict-transport-security x-frame-options; do
+            if grep -qi "^$h:" headers.txt; then
+              echo "OK: $h present"
+            else
+              echo "MISSING: $h"
+              status=1
+            fi
+          done
+          exit $status
