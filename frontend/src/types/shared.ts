@@ -151,3 +151,32 @@ export interface ActivateResponse {
   deviceId: string;
   expiresAt: string;
 }
+
+export interface Device {
+  id: string;
+  name: string;
+  activatedAt: string;
+  lastUsedAt?: string;
+  status: "active" | "revoked";
+}
+
+export interface DevicesResponse {
+  devices: Device[];
+}
+
+export interface GenerateCodeResponse {
+  code: string;
+}
+
+export interface RevokeDeviceRequest {
+  deviceId: string;
+}
+
+export interface RevokeDeviceResponse {
+  success: boolean;
+}
+
+export interface RenewTokenResponse {
+  token: string;
+  expiresAt: string;
+}

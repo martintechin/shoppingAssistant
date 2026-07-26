@@ -65,9 +65,31 @@ const en: Language = {
     "settings.stores": "Stores",
     "settings.deviceTokens": "Device Tokens",
 
-    // Device tokens placeholder
+    // Device tokens
     "deviceTokens.title": "Device Tokens",
-    "deviceTokens.placeholder": "Device token management coming soon.",
+    "deviceTokens.thisDevice": "(this device)",
+    "deviceTokens.unnamed": "Unnamed device",
+    "deviceTokens.activatedAt": "Activated {date}",
+    "deviceTokens.lastUsed": "Last used {when}",
+    "deviceTokens.lastUsedNever": "Never used",
+    "deviceTokens.revoke": "Revoke",
+    "deviceTokens.confirmRevoke": "Confirm revoke",
+    "deviceTokens.revokeFailed": "Could not revoke device",
+    "deviceTokens.generateCode": "+ Generate activation code",
+    "deviceTokens.generating": "Generating...",
+    "deviceTokens.generateFailed": "Could not generate code",
+    "deviceTokens.generatedCode": "Activation code",
+    "deviceTokens.copyCode": "Copy",
+    "deviceTokens.codeCopied": "Copied!",
+    "deviceTokens.codeHint": "Share this code to activate a new device. It can only be used once.",
+    "deviceTokens.dismiss": "Dismiss",
+    "deviceTokens.loading": "Loading devices...",
+    "deviceTokens.empty": "No active devices.",
+    "deviceTokens.expiryWarning": "Your token expires in {days} days.",
+    "deviceTokens.renew": "Renew",
+    "deviceTokens.renewing": "Renewing...",
+    "deviceTokens.renewed": "Token renewed successfully.",
+    "deviceTokens.renewFailed": "Could not renew token",
 
     // Recipes placeholder
     "recipes.title": "Recipes",

@@ -65,9 +65,31 @@ const sv: Language = {
     "settings.stores": "Butiker",
     "settings.deviceTokens": "Enhetsnycklar",
 
-    // Device tokens placeholder
+    // Device tokens
     "deviceTokens.title": "Enhetsnycklar",
-    "deviceTokens.placeholder": "Hantering av enhetsnycklar kommer snart.",
+    "deviceTokens.thisDevice": "(denna enhet)",
+    "deviceTokens.unnamed": "Namnlös enhet",
+    "deviceTokens.activatedAt": "Aktiverad {date}",
+    "deviceTokens.lastUsed": "Senast använd {when}",
+    "deviceTokens.lastUsedNever": "Aldrig använd",
+    "deviceTokens.revoke": "Återkalla",
+    "deviceTokens.confirmRevoke": "Bekräfta återkallning",
+    "deviceTokens.revokeFailed": "Kunde inte återkalla enhet",
+    "deviceTokens.generateCode": "+ Generera aktiveringskod",
+    "deviceTokens.generating": "Genererar...",
+    "deviceTokens.generateFailed": "Kunde inte generera kod",
+    "deviceTokens.generatedCode": "Aktiveringskod",
+    "deviceTokens.copyCode": "Kopiera",
+    "deviceTokens.codeCopied": "Kopierad!",
+    "deviceTokens.codeHint": "Dela denna kod för att aktivera en ny enhet. Den kan bara användas en gång.",
+    "deviceTokens.dismiss": "Stäng",
+    "deviceTokens.loading": "Laddar enheter...",
+    "deviceTokens.empty": "Inga aktiva enheter.",
+    "deviceTokens.expiryWarning": "Din nyckel går ut om {days} dagar.",
+    "deviceTokens.renew": "Förnya",
+    "deviceTokens.renewing": "Förnyar...",
+    "deviceTokens.renewed": "Nyckel förnyad.",
+    "deviceTokens.renewFailed": "Kunde inte förnya nyckel",
 
     // Recipes placeholder
     "recipes.title": "Recept",
