@@ -180,3 +180,20 @@ export interface RenewTokenResponse {
   token: string;
   expiresAt: string;
 }
+
+export interface ActivationCode {
+  code: string;
+  createdAt?: string;
+}
+
+export interface CodesResponse {
+  codes: ActivationCode[];
+}
+
+export interface DeleteCodeRequest {
+  code: string;
+}
+
+export interface DeleteCodeResponse {
+  success: boolean;
+}

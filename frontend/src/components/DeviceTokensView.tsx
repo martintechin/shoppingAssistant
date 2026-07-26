@@ -4,7 +4,7 @@ import { useDevices } from "../hooks/useDevices";
 import { getTokenInfo } from "../utils/tokenInfo";
 import { formatRelativeDays, formatDate } from "../utils/dates";
 import type { UseTokenExpiryResult } from "../hooks/useTokenExpiry";
-import type { Device } from "../types/shared";
+import type { Device, ActivationCode } from "../types/shared";
 
 interface DeviceTokensViewProps {
   tokenExpiry: UseTokenExpiryResult;
@@ -19,8 +19,11 @@ export function DeviceTokensView({ tokenExpiry }: DeviceTokensViewProps) {
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [copiedExisting, setCopiedExisting] = useState<string | null>(null);
   const [revokeError, setRevokeError] = useState<string | null>(null);
   const [confirmingRevoke, setConfirmingRevoke] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   async function handleGenerateCode() {
     setGenerating(true);
@@ -38,13 +41,17 @@ export function DeviceTokensView({ tokenExpiry }: DeviceTokensViewProps) {
     }
   }
 
-  async function handleCopyCode() {
-    if (!generatedCode) return;
+  async function handleCopyCode(code: string, isGenerated?: boolean) {
     try {
-      await navigator.clipboard.writeText(generatedCode);
-      setCodeCopied(true);
+      await navigator.clipboard.writeText(code);
+      if (isGenerated) {
+        setCodeCopied(true);
+      } else {
+        setCopiedExisting(code);
+        setTimeout(() => setCopiedExisting(null), 2000);
+      }
     } catch {
-      // Fallback: select-and-copy not needed for modern browsers
+      // Clipboard API not available
     }
   }
 
@@ -60,6 +67,22 @@ export function DeviceTokensView({ tokenExpiry }: DeviceTokensViewProps) {
     } catch (err) {
       setRevokeError(
         err instanceof Error ? err.message : t("deviceTokens.revokeFailed")
+      );
+    }
+  }
+
+  async function handleDeleteCode(code: string) {
+    if (confirmingDelete !== code) {
+      setConfirmingDelete(code);
+      return;
+    }
+    setConfirmingDelete(null);
+    setDeleteError(null);
+    try {
+      await devices.deleteCode(code);
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : t("deviceTokens.deleteFailed")
       );
     }
   }
@@ -98,67 +121,123 @@ export function DeviceTokensView({ tokenExpiry }: DeviceTokensViewProps) {
       )}
 
       {revokeError && <div className="banner-error">{revokeError}</div>}
+      {deleteError && <div className="banner-error">{deleteError}</div>}
 
-      {devices.loading && !devices.devices.length && (
+      {devices.loading && !devices.devices.length && !devices.codes.length && (
         <div className="empty-state">{t("deviceTokens.loading")}</div>
-      )}
-
-      {!devices.loading && devices.devices.length === 0 && (
-        <div className="empty-state">{t("deviceTokens.empty")}</div>
       )}
 
       {devices.error && <div className="banner-error">{devices.error}</div>}
 
+      {/* Active devices */}
       {devices.devices.length > 0 && (
-        <div className="device-list">
-          {devices.devices.map((device: Device) => {
-            const isCurrent = device.id === currentDeviceId;
-            return (
-              <div key={device.id} className="device-row">
-                <div className="device-info">
-                  <div className="device-name">
-                    {device.name || t("deviceTokens.unnamed")}
-                    {isCurrent && (
-                      <span className="device-badge">
-                        {t("deviceTokens.thisDevice")}
-                      </span>
-                    )}
+        <>
+          <h2 className="device-section-title">
+            {t("deviceTokens.devicesSection")}
+          </h2>
+          <div className="device-list">
+            {devices.devices.map((device: Device) => {
+              const isCurrent = device.id === currentDeviceId;
+              return (
+                <div key={device.id} className="device-row">
+                  <div className="device-info">
+                    <div className="device-name">
+                      {device.name || t("deviceTokens.unnamed")}
+                      {isCurrent && (
+                        <span className="device-badge">
+                          {t("deviceTokens.thisDevice")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="device-meta">
+                      {t("deviceTokens.activatedAt", {
+                        date: formatDate(device.activatedAt),
+                      })}
+                      {" · "}
+                      {device.lastUsedAt
+                        ? t("deviceTokens.lastUsed", {
+                            when: formatRelativeDays(device.lastUsedAt),
+                          })
+                        : t("deviceTokens.lastUsedNever")}
+                    </div>
                   </div>
+                  {!isCurrent && (
+                    <button
+                      className={
+                        confirmingRevoke === device.id
+                          ? "btn-small btn-danger"
+                          : "btn-small btn-danger-outline"
+                      }
+                      onClick={() => handleRevoke(device.id)}
+                      onBlur={() => {
+                        if (confirmingRevoke === device.id)
+                          setConfirmingRevoke(null);
+                      }}
+                    >
+                      {confirmingRevoke === device.id
+                        ? t("deviceTokens.confirmRevoke")
+                        : t("deviceTokens.revoke")}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* Unclaimed activation codes */}
+      {devices.codes.length > 0 && (
+        <>
+          <h2 className="device-section-title">
+            {t("deviceTokens.codesSection")}
+          </h2>
+          <div className="device-list">
+            {devices.codes.map((ac: ActivationCode) => (
+              <div key={ac.code} className="device-row">
+                <div className="device-info">
+                  <div className="device-name code-value">{ac.code}</div>
                   <div className="device-meta">
-                    {t("deviceTokens.activatedAt", {
-                      date: formatDate(device.activatedAt),
-                    })}
-                    {" · "}
-                    {device.lastUsedAt
-                      ? t("deviceTokens.lastUsed", {
-                          when: formatRelativeDays(device.lastUsedAt),
-                        })
-                      : t("deviceTokens.lastUsedNever")}
+                    {t("deviceTokens.unclaimed")}
                   </div>
                 </div>
-                {!isCurrent && (
+                <div className="code-row-actions">
+                  <button
+                    className="btn-small btn-secondary"
+                    onClick={() => handleCopyCode(ac.code)}
+                  >
+                    {copiedExisting === ac.code
+                      ? t("deviceTokens.codeCopied")
+                      : t("deviceTokens.copyCode")}
+                  </button>
                   <button
                     className={
-                      confirmingRevoke === device.id
+                      confirmingDelete === ac.code
                         ? "btn-small btn-danger"
                         : "btn-small btn-danger-outline"
                     }
-                    onClick={() => handleRevoke(device.id)}
+                    onClick={() => handleDeleteCode(ac.code)}
                     onBlur={() => {
-                      if (confirmingRevoke === device.id)
-                        setConfirmingRevoke(null);
+                      if (confirmingDelete === ac.code)
+                        setConfirmingDelete(null);
                     }}
                   >
-                    {confirmingRevoke === device.id
-                      ? t("deviceTokens.confirmRevoke")
-                      : t("deviceTokens.revoke")}
+                    {confirmingDelete === ac.code
+                      ? t("deviceTokens.confirmDelete")
+                      : t("deviceTokens.delete")}
                   </button>
-                )}
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </>
       )}
+
+      {!devices.loading &&
+        devices.devices.length === 0 &&
+        devices.codes.length === 0 && (
+          <div className="empty-state">{t("deviceTokens.empty")}</div>
+        )}
 
       <div className="device-generate-section">
         {generatedCode ? (
@@ -171,7 +250,10 @@ export function DeviceTokensView({ tokenExpiry }: DeviceTokensViewProps) {
               {t("deviceTokens.codeHint")}
             </div>
             <div className="generated-code-actions">
-              <button className="btn-small btn-primary" onClick={handleCopyCode}>
+              <button
+                className="btn-small btn-primary"
+                onClick={() => handleCopyCode(generatedCode, true)}
+              >
                 {codeCopied
                   ? t("deviceTokens.codeCopied")
                   : t("deviceTokens.copyCode")}

@@ -1046,3 +1046,23 @@
   gap: 8px;
   justify-content: center;
 }
+
+.device-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 20px 0 8px;
+}
+
+.code-value {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.code-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
