@@ -21,3 +21,7 @@ import "./functions/generateCode.js";
 import "./functions/deleteCode.js";
 import "./functions/revokeDevice.js";
 import "./functions/renewToken.js";
+import "./functions/getRecipes.js";
+import "./functions/storeRecipe.js";
+import "./functions/updateRecipe.js";
+import "./functions/deleteRecipe.js";
