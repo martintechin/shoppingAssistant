@@ -59,9 +59,112 @@ npm run test:frontend
 
 ## Deployment
 
-1. Create the resource group, then run the **Deploy Infrastructure & App** workflow manually with `deploy_infra: true` (requires the `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID` OIDC secrets and a `JWT_SECRET` secret).
-2. Save the Static Web App deployment token as the `AZURE_STATIC_WEB_APPS_API_TOKEN` repo secret.
-3. Every push to `main` builds, tests and deploys.
-4. Seed production: run the seed scripts with `AZURE_STORAGE_CONNECTION_STRING` pointed at the production storage account.
+The app deploys to an Azure Static Web App with a linked Functions API and Azure Table Storage, provisioned by Bicep (`infra/main.bicep`) and driven by GitHub Actions (`.github/workflows/deploy.yml`). All deployment targets are configurable — a fork sets a handful of repo Secrets and Variables and never edits the workflow.
+
+> If you are opening this repo (or a fork) to the public, read **[PUBLISHING.md](./PUBLISHING.md)** first — it covers rotating the JWT secret and scrubbing the old deployment hostname from git history.
+
+### Prerequisites
+
+- An Azure subscription and the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`), with Bicep (`az bicep install`).
+- Permission to create an Entra (Azure AD) app registration and assign roles on the resource group.
+
+### 1. Resource group
+
+Create the group; its name must match the `RESOURCE_GROUP` variable below (default `rg-shoppingassistant-prod`):
+
+```bash
+az group create --name rg-shoppingassistant-prod --location swedencentral
+```
+
+### 2. OIDC login for GitHub Actions
+
+The workflow authenticates to Azure with OIDC (no stored credentials). Create an app registration, add a **federated credential** for this repo, and grant it Contributor on the resource group:
+
+```bash
+APP_ID=$(az ad app create --display-name "shoppingassistant-deploy" --query appId -o tsv)
+az ad sp create --id "$APP_ID"
+
+# Federated credential — replace OWNER/REPO. Subject must match the branch that deploys.
+az ad app federated-credential create --id "$APP_ID" --parameters '{
+  "name": "github-main",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:OWNER/REPO:ref:refs/heads/main",
+  "audiences": ["api://AzureADTokenExchange"]
+}'
+
+SUB_ID=$(az account show --query id -o tsv)
+az role assignment create --assignee "$APP_ID" --role Contributor \
+  --scope "/subscriptions/$SUB_ID/resourceGroups/rg-shoppingassistant-prod"
+```
+
+Note the app's **client ID** (`$APP_ID`), your **tenant ID** (`az account show --query tenantId -o tsv`), and **subscription ID** (`$SUB_ID`) for the next step.
+
+### 3. Repo Secrets and Variables
+
+In **Settings → Secrets and variables → Actions**:
+
+**Secrets**
+
+| Secret | Value |
+|---|---|
+| `AZURE_CLIENT_ID` | app registration client ID |
+| `AZURE_TENANT_ID` | tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | subscription ID |
+| `JWT_SECRET` | ≥32 random bytes — `openssl rand -base64 32`. Signs device tokens; keep it stable (rotating it forces every device to re-activate). |
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | added in step 5 |
+
+**Variables** (all optional — omit to use the defaults):
+
+| Variable | Default | Notes |
+|---|---|---|
+| `RESOURCE_GROUP` | `rg-shoppingassistant-prod` | must match step 1 |
+| `LOCATION` | `swedencentral` | region for storage |
+| `SWA_LOCATION` | `westeurope` | Static Web Apps has limited regions; keep separate from `LOCATION` |
+| `APP_NAME` | `shoppingassistant` | base name for resources; the SWA is always `swa-${APP_NAME}` |
+| `OWNER_TAG` | `shoppingassistant` | Azure resource tag |
+
+### 4. Provision infrastructure
+
+Run the **Deploy Infrastructure & App** workflow manually (Actions → Run workflow) with `deploy_infra: true`. This provisions the storage account, four tables, the Static Web App, and its app settings, then deploys the app.
+
+### 5. Save the deployment token
+
+Grab the SWA deployment token and store it as the `AZURE_STATIC_WEB_APPS_API_TOKEN` secret so subsequent pushes to `main` can deploy:
+
+```bash
+az staticwebapp secrets list --name swa-shoppingassistant \
+  --resource-group rg-shoppingassistant-prod \
+  --query "properties.apiKey" -o tsv
+```
+
+From here, **every push to `main` builds, tests, and deploys** the app.
+
+### 6. Seed production data
+
+Seeding runs from your workstation (the scripts aren't packaged into the deploy). Point them at the production storage account:
+
+```bash
+export AZURE_STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
+  --resource-group rg-shoppingassistant-prod \
+  --name <storageAccountName> --query connectionString -o tsv)
+
+npm run seed:codes    # prints one-time activation codes
+npm run seed:food     # ~150 Swedish grocery items (idempotent)
+```
+
+The storage account name is generated (`st…` + a hash); find it with `az storage account list -g rg-shoppingassistant-prod --query "[].name" -o tsv`. **If `AZURE_STORAGE_CONNECTION_STRING` is unset the scripts silently seed the local Azurite emulator instead** — export it first.
+
+### Forking / renaming
+
+Beyond the repo Variables above, personalize:
+
+- `frontend/src/components/ActivationGate.tsx` — the `"t.ex. Martins mobil"` device-name placeholder.
+- `frontend/vite.config.ts` and `frontend/index.html` — PWA name, title, theme color.
+- The UI text is Swedish only (no i18n); locale is `sv-SE` throughout.
+
+### Managing devices and codes
+
+- **Revoke a device**: in Azure Storage Explorer, open the `DeviceAuth` table, find the row in the `device` partition, set its `status` to `revoked`. The per-request check rejects it on the next call.
+- **New activation codes**: re-run `npm run seed:codes` (against production, per step 6). Codes are single-use and printed only once — store them securely.
 
 Secrets live only in GitHub Actions secrets and Azure app settings — never in the repo.

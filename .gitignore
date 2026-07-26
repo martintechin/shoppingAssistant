@@ -8,6 +8,14 @@ dev-dist/
 # Local development
 local.settings.json
 .azurite/
+.env
+.env.*
+!.env.example
+.swa/
+
+# Editors
+.vscode/
+.idea/
 
 # Logs and OS files
 *.log
