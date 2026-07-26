@@ -115,19 +115,19 @@ jobs:
             --connection-string "$CONN_STR" \
             --entity PartitionKey=code RowKey="$CODE" status=active
 
-          cat >> "$GITHUB_STEP_SUMMARY" << EOF
-### First Activation Code
-
-Your app is ready at: **${APP_URL}**
-
-Use this code to activate your first device:
-
-\`\`\`
-${CODE}
-\`\`\`
-
-> This code is single-use. After activating, generate additional codes from **Settings → Devices** in the app.
-EOF
+          {
+            echo "### First Activation Code"
+            echo ""
+            echo "Your app is ready at: **${APP_URL}**"
+            echo ""
+            echo "Use this code to activate your first device:"
+            echo ""
+            echo "\`\`\`"
+            echo "${CODE}"
+            echo "\`\`\`"
+            echo ""
+            echo "> This code is single-use. After activating, generate additional codes from **Settings → Devices** in the app."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Get SWA deployment token
         id: get-token
