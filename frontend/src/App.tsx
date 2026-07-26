@@ -3,8 +3,8 @@ import { ActivationGate } from "./components/ActivationGate";
 import { TabBar, View } from "./components/TabBar";
 import { ListView } from "./components/ListView";
 import { ShoppingView } from "./components/ShoppingView";
-import { FoodsView } from "./components/FoodsView";
-import { StoresView } from "./components/StoresView";
+import { RecipesView } from "./components/RecipesView";
+import { SettingsView } from "./components/SettingsView";
 import { useFoodItems } from "./hooks/useFoodItems";
 import { useShoppingList } from "./hooks/useShoppingList";
 import { useStores } from "./hooks/useStores";
@@ -33,8 +33,10 @@ function AppShell() {
       <main className="view-container">
         {view === "list" && <ListView foodItems={foodItems} list={list} />}
         {view === "shop" && <ShoppingView list={list} stores={stores} />}
-        {view === "foods" && <FoodsView foodItems={foodItems} list={list} />}
-        {view === "stores" && <StoresView stores={stores} foodItems={foodItems} />}
+        {view === "recipes" && <RecipesView />}
+        {view === "settings" && (
+          <SettingsView foodItems={foodItems} list={list} stores={stores} />
+        )}
       </main>
       <TabBar view={view} onChange={setView} listCount={uncheckedCount} />
     </div>
