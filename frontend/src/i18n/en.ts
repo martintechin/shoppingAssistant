@@ -55,8 +55,23 @@ const en: Language = {
     // Tab bar
     "tab.list": "List",
     "tab.shop": "Shop",
-    "tab.items": "Items",
-    "tab.stores": "Stores",
+    "tab.recipes": "Recipes",
+    "tab.settings": "Settings",
+
+    // Settings view
+    "settings.title": "Settings",
+    "settings.back": "Back",
+    "settings.foods": "Items",
+    "settings.stores": "Stores",
+    "settings.deviceTokens": "Device Tokens",
+
+    // Device tokens placeholder
+    "deviceTokens.title": "Device Tokens",
+    "deviceTokens.placeholder": "Device token management coming soon.",
+
+    // Recipes placeholder
+    "recipes.title": "Recipes",
+    "recipes.placeholder": "Recipes coming soon.",
 
     // Add item bar
     "addItem.placeholder": "Add item...",
@@ -120,7 +135,7 @@ const en: Language = {
 
     // Shopping view
     "shop.hintSelectStore": "Select a store to sort the list by your route through the store.",
-    "shop.hintAddStore": "Add a store under the Stores tab to sort the list by your route through the store and see which items are missing there.",
+    "shop.hintAddStore": "Add a store under Settings → Stores to sort the list by your route through the store and see which items are missing there.",
     "shop.loading": "Loading list...",
     "shop.empty": "The list is empty — nothing to shop!",
     "shop.updateFailed": "Could not update the item",

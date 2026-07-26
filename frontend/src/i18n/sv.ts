@@ -55,8 +55,23 @@ const sv: Language = {
     // Tab bar
     "tab.list": "Lista",
     "tab.shop": "Handla",
-    "tab.items": "Varor",
-    "tab.stores": "Butiker",
+    "tab.recipes": "Recept",
+    "tab.settings": "Inställningar",
+
+    // Settings view
+    "settings.title": "Inställningar",
+    "settings.back": "Tillbaka",
+    "settings.foods": "Varor",
+    "settings.stores": "Butiker",
+    "settings.deviceTokens": "Enhetsnycklar",
+
+    // Device tokens placeholder
+    "deviceTokens.title": "Enhetsnycklar",
+    "deviceTokens.placeholder": "Hantering av enhetsnycklar kommer snart.",
+
+    // Recipes placeholder
+    "recipes.title": "Recept",
+    "recipes.placeholder": "Recept kommer snart.",
 
     // Add item bar
     "addItem.placeholder": "Lägg till vara...",
@@ -120,7 +135,7 @@ const sv: Language = {
 
     // Shopping view
     "shop.hintSelectStore": "Välj en butik för att sortera listan efter din väg genom butiken.",
-    "shop.hintAddStore": "Lägg till en butik under fliken Butiker för att sortera listan efter din väg genom butiken och se vilka varor som saknas där.",
+    "shop.hintAddStore": "Lägg till en butik under Inställningar → Butiker för att sortera listan efter din väg genom butiken och se vilka varor som saknas där.",
     "shop.loading": "Laddar listan...",
     "shop.empty": "Listan är tom — inget att handla!",
     "shop.updateFailed": "Kunde inte uppdatera varan",

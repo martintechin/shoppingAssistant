@@ -1,6 +1,6 @@
 import { t } from "../i18n";
 
-export type View = "list" | "shop" | "foods" | "stores";
+export type View = "list" | "shop" | "recipes" | "settings";
 
 interface TabBarProps {
   view: View;
@@ -11,8 +11,8 @@ interface TabBarProps {
 const TABS: Array<{ id: View; labelKey: string; icon: string }> = [
   { id: "list", labelKey: "tab.list", icon: "📝" },
   { id: "shop", labelKey: "tab.shop", icon: "🛒" },
-  { id: "foods", labelKey: "tab.items", icon: "🥕" },
-  { id: "stores", labelKey: "tab.stores", icon: "🏬" },
+  { id: "recipes", labelKey: "tab.recipes", icon: "📖" },
+  { id: "settings", labelKey: "tab.settings", icon: "⚙️" },
 ];
 
 export function TabBar({ view, onChange, listCount }: TabBarProps) {
