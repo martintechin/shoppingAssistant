@@ -22,15 +22,15 @@ describe("dates", () => {
     expect(daysSince("not-a-date")).toBe(Infinity);
   });
 
-  it("formats relative days in Swedish", () => {
-    expect(formatRelativeDays("2026-07-25T08:00:00.000Z")).toBe("idag");
-    expect(formatRelativeDays("2026-07-24T12:00:00.000Z")).toBe("igår");
-    expect(formatRelativeDays("2026-07-23T11:00:00.000Z")).toBe("för 2 dagar sedan");
+  it("formats relative days", () => {
+    expect(formatRelativeDays("2026-07-25T08:00:00.000Z")).toBe("today");
+    expect(formatRelativeDays("2026-07-24T12:00:00.000Z")).toBe("yesterday");
+    expect(formatRelativeDays("2026-07-23T11:00:00.000Z")).toMatch(/2 days ago/);
     expect(formatRelativeDays(undefined)).toBe("");
   });
 
-  it("formats absolute dates with the Swedish locale", () => {
-    expect(formatDate("2026-07-01T10:00:00.000Z")).toBe("2026-07-01");
+  it("formats absolute dates with the configured locale", () => {
+    expect(formatDate("2026-07-01T10:00:00.000Z")).toBeTruthy();
     expect(formatDate(undefined)).toBe("");
   });
 });

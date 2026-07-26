@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode, FormEvent } from "react";
 import { API_BASE, getAuthToken, setAuthToken, onAuthExpired } from "../utils/api";
+import { t } from "../i18n";
 
 interface ActivationGateProps {
   children: ReactNode;
@@ -22,7 +23,7 @@ export function ActivationGate({ children }: ActivationGateProps) {
 
     const trimmedCode = code.trim();
     if (!trimmedCode) {
-      setError("Ange en aktiveringskod");
+      setError(t("activation.emptyCode"));
       return;
     }
 
@@ -36,14 +37,14 @@ export function ActivationGate({ children }: ActivationGateProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.error || `Aktivering misslyckades (${res.status})`);
+        throw new Error(data?.error || `${t("activation.failed")} (${res.status})`);
       }
 
       const { token } = await res.json();
       setAuthToken(token);
       setAuthenticated(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Aktivering misslyckades");
+      setError(err instanceof Error ? err.message : t("activation.failed"));
     } finally {
       setSubmitting(false);
     }
@@ -56,11 +57,11 @@ export function ActivationGate({ children }: ActivationGateProps) {
   return (
     <div className="activation-gate">
       <div className="activation-card">
-        <h1>Inköpslistan</h1>
-        <p>Ange aktiveringskod för att komma igång</p>
+        <h1>{t("activation.title")}</h1>
+        <p>{t("activation.description")}</p>
         <form onSubmit={handleSubmit}>
           <div className="form-field">
-            <label htmlFor="activation-code">Aktiveringskod</label>
+            <label htmlFor="activation-code">{t("activation.codeLabel")}</label>
             <input
               id="activation-code"
               type="text"
@@ -72,18 +73,18 @@ export function ActivationGate({ children }: ActivationGateProps) {
             />
           </div>
           <div className="form-field">
-            <label htmlFor="device-name">Enhetsnamn (valfritt)</label>
+            <label htmlFor="device-name">{t("activation.deviceLabel")}</label>
             <input
               id="device-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="t.ex. Martins mobil"
+              placeholder={t("activation.devicePlaceholder")}
             />
           </div>
           {error && <div className="form-error">{error}</div>}
           <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "Aktiverar..." : "Aktivera"}
+            {submitting ? t("activation.submitting") : t("activation.submit")}
           </button>
         </form>
       </div>

@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { UNITS } from "../types/shared";
+import { CATEGORIES, UNITS, t } from "../i18n";
 import { Modal } from "./Modal";
 
 interface NewFoodItemModalProps {
@@ -10,9 +10,11 @@ interface NewFoodItemModalProps {
 }
 
 export function NewFoodItemModal({ initialName, categories, onClose, onCreate }: NewFoodItemModalProps) {
+  const defaultCategory = CATEGORIES[CATEGORIES.length - 1];
+  const defaultUnit = UNITS[0];
   const [name, setName] = useState(initialName);
-  const [category, setCategory] = useState<string>("Övrigt");
-  const [unit, setUnit] = useState<string>("st");
+  const [category, setCategory] = useState<string>(defaultCategory);
+  const [unit, setUnit] = useState<string>(defaultUnit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +24,7 @@ export function NewFoodItemModal({ initialName, categories, onClose, onCreate }:
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("Ange ett namn");
+      setError(t("newFood.emptyName"));
       return;
     }
 
@@ -31,16 +33,16 @@ export function NewFoodItemModal({ initialName, categories, onClose, onCreate }:
       await onCreate(trimmedName, category, unit);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte skapa varan");
+      setError(err instanceof Error ? err.message : t("newFood.createFailed"));
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Ny vara" onClose={onClose}>
+    <Modal title={t("newFood.title")} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="new-item-name">Namn</label>
+          <label htmlFor="new-item-name">{t("foodForm.nameLabel")}</label>
           <input
             id="new-item-name"
             type="text"
@@ -51,7 +53,7 @@ export function NewFoodItemModal({ initialName, categories, onClose, onCreate }:
           />
         </div>
         <div className="form-field">
-          <label htmlFor="new-item-category">Kategori</label>
+          <label htmlFor="new-item-category">{t("foodForm.categoryLabel")}</label>
           <select
             id="new-item-category"
             value={category}
@@ -65,7 +67,7 @@ export function NewFoodItemModal({ initialName, categories, onClose, onCreate }:
           </select>
         </div>
         <div className="form-field">
-          <label htmlFor="new-item-unit">Enhet</label>
+          <label htmlFor="new-item-unit">{t("foodForm.unitLabel")}</label>
           <select id="new-item-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
             {UNITS.map((u) => (
               <option key={u} value={u}>
@@ -77,10 +79,10 @@ export function NewFoodItemModal({ initialName, categories, onClose, onCreate }:
         {error && <div className="form-error">{error}</div>}
         <div className="form-actions">
           <button type="button" className="btn-secondary" onClick={onClose}>
-            Avbryt
+            {t("newFood.cancel")}
           </button>
           <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "Sparar..." : "Skapa och lägg till"}
+            {submitting ? t("newFood.saving") : t("newFood.submit")}
           </button>
         </div>
       </form>

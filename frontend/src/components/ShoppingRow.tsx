@@ -1,5 +1,6 @@
 import { ListItem } from "../types/shared";
 import { formatQuantity } from "./ListItemRow";
+import { t } from "../i18n";
 
 interface ShoppingRowProps {
   item: ListItem;
@@ -24,7 +25,7 @@ export function ShoppingRow({ item, unavailable, onToggle }: ShoppingRowProps) {
         <span className="shopping-row-name">{item.name}</span>
         {item.note && <span className="shopping-row-note">{item.note}</span>}
       </div>
-      {unavailable && <span className="unavailable-badge">Finns ej här</span>}
+      {unavailable && <span className="unavailable-badge">{t("shopping.unavailable")}</span>}
       <span className="shopping-row-quantity">{formatQuantity(item.quantity, item.unit)}</span>
     </button>
   );

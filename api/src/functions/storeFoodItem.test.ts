@@ -28,10 +28,10 @@ describe("storeFoodItem", () => {
     expect(result.status).toBe(401);
   });
 
-  it("rejects an unknown unit", async () => {
+  it("rejects an empty unit", async () => {
     const req = createMockRequest({
       method: "POST",
-      body: { name: "Mjölk", category: "Mejeri & Ägg", unit: "hg" },
+      body: { name: "Mjölk", category: "Mejeri & Ägg", unit: "" },
     });
     const result = await storeFoodItem(req, createMockContext());
     expect(result.status).toBe(400);

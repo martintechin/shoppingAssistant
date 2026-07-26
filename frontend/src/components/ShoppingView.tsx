@@ -5,6 +5,7 @@ import { UseStoresResult } from "../hooks/useStores";
 import { ApiError, apiPost, apiPut } from "../utils/api";
 import { getCategoryColor } from "../config";
 import { groupByCategory, sortByStoreOrder } from "../utils/sorting";
+import { t } from "../i18n";
 import { StorePicker } from "./StorePicker";
 import { ShoppingRow } from "./ShoppingRow";
 
@@ -29,8 +30,6 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
     localStorage.setItem(SELECTED_STORE_KEY, id);
   }
 
-  // Optimistic toggle: flip locally first so the tap feels instant in-store,
-  // then reconcile with the server (refresh on 404 — another device removed it).
   async function toggle(item: ListItem) {
     setActionError(null);
     const nextChecked = !item.checked;
@@ -47,7 +46,7 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
       list.mutate((items) =>
         items.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i))
       );
-      setActionError(err instanceof Error ? err.message : "Kunde inte uppdatera varan");
+      setActionError(err instanceof Error ? err.message : t("shop.updateFailed"));
     }
   }
 
@@ -58,7 +57,7 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
       setConfirmClear(false);
       list.refresh();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Kunde inte rensa listan");
+      setActionError(err instanceof Error ? err.message : t("shop.clearFailed"));
     }
   }
 
@@ -72,24 +71,19 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
       <StorePicker stores={stores.stores} selectedId={storeId} onSelect={selectStore} />
 
       {store === null && stores.stores.length > 0 && (
-        <div className="banner-hint">
-          Välj en butik för att sortera listan efter din väg genom butiken.
-        </div>
+        <div className="banner-hint">{t("shop.hintSelectStore")}</div>
       )}
       {stores.stores.length === 0 && !stores.loading && (
-        <div className="banner-hint">
-          Lägg till en butik under fliken Butiker för att sortera listan efter din väg
-          genom butiken och se vilka varor som saknas där.
-        </div>
+        <div className="banner-hint">{t("shop.hintAddStore")}</div>
       )}
 
       {actionError && <div className="banner-error">{actionError}</div>}
       {list.error && <div className="banner-error">{list.error}</div>}
 
       {list.loading && list.items.length === 0 ? (
-        <div className="empty-state">Laddar listan...</div>
+        <div className="empty-state">{t("shop.loading")}</div>
       ) : list.items.length === 0 ? (
-        <div className="empty-state">Listan är tom — inget att handla!</div>
+        <div className="empty-state">{t("shop.empty")}</div>
       ) : (
         <>
           {groups.map(([category, items]) => (
@@ -117,15 +111,15 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
               {confirmClear ? (
                 <div className="confirm-actions">
                   <button className="btn-danger" onClick={clearChecked}>
-                    Bekräfta rensning
+                    {t("shop.confirmClear")}
                   </button>
                   <button className="btn-secondary" onClick={() => setConfirmClear(false)}>
-                    Avbryt
+                    {t("shop.cancel")}
                   </button>
                 </div>
               ) : (
                 <button className="btn-secondary" onClick={() => setConfirmClear(true)}>
-                  Rensa avprickade ({checkedCount})
+                  {t("shop.clearChecked", { count: checkedCount })}
                 </button>
               )}
             </div>

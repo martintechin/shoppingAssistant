@@ -10,6 +10,7 @@ import { UseShoppingListResult } from "../hooks/useShoppingList";
 import { ApiError, apiDelete, apiPost, apiPut } from "../utils/api";
 import { getCategoryColor, getDefaultQuantity, getAllCategories } from "../config";
 import { groupByCategory, sortByStoreOrder } from "../utils/sorting";
+import { t } from "../i18n";
 import { AddItemBar } from "./AddItemBar";
 import { NewFoodItemModal } from "./NewFoodItemModal";
 import { ListItemRow } from "./ListItemRow";
@@ -37,12 +38,10 @@ export function ListView({ foodItems, list }: ListViewProps) {
       });
       list.refresh();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Kunde inte lägga till varan");
+      setActionError(err instanceof Error ? err.message : t("list.couldNotAdd"));
     }
   }
 
-  // Create a new food item, then put it on the list. A 409 means the item
-  // already exists (e.g. added from another device) — add that one instead.
   async function createAndAdd(name: string, category: string, unit: string) {
     try {
       const result = await apiPost<StoreFoodItemResponse>("storeFoodItem", {
@@ -111,7 +110,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
         list.refresh();
         return;
       }
-      setActionError(err instanceof Error ? err.message : "Kunde inte ta bort varan");
+      setActionError(err instanceof Error ? err.message : t("list.couldNotRemove"));
     }
   }
 
@@ -132,11 +131,9 @@ export function ListView({ foodItems, list }: ListViewProps) {
       {list.error && <div className="banner-error">{list.error}</div>}
 
       {list.loading && list.items.length === 0 ? (
-        <div className="empty-state">Laddar listan...</div>
+        <div className="empty-state">{t("list.loading")}</div>
       ) : list.items.length === 0 ? (
-        <div className="empty-state">
-          Listan är tom. Sök efter en vara ovan för att lägga till den.
-        </div>
+        <div className="empty-state">{t("list.empty")}</div>
       ) : (
         <>
           {groups.map(([category, items]) => (
@@ -162,7 +159,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
 
           {checkedItems.length > 0 && (
             <section className="category-group checked-group">
-              <h2 className="category-header">Avprickade</h2>
+              <h2 className="category-header">{t("list.checkedSection")}</h2>
               {checkedItems.map((item) => (
                 <ListItemRow
                   key={item.id}

@@ -2,7 +2,8 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import { verifyRequest } from "../auth.js";
 import { escapeOData } from "../odata.js";
 import { getTableClient } from "../tableClient.js";
-import { FoodItem, UpdateFoodItemResponse, UNITS } from "../types/shared.js";
+import { FoodItem, UpdateFoodItemResponse } from "../types/shared.js";
+import { APP_LOCALE } from "../locale.js";
 
 const tableName = "FoodItems";
 
@@ -50,10 +51,13 @@ export async function updateFoodItem(
     ) {
       return { status: 400, jsonBody: { error: "Invalid 'category': must be 1-50 characters" } };
     }
-    if (data.unit !== undefined && !(UNITS as readonly string[]).includes(data.unit)) {
+    if (
+      data.unit !== undefined &&
+      (typeof data.unit !== "string" || data.unit.length === 0 || data.unit.length > 10)
+    ) {
       return {
         status: 400,
-        jsonBody: { error: `Invalid 'unit': must be one of ${UNITS.join(", ")}` },
+        jsonBody: { error: "Invalid 'unit': must be 1-10 characters" },
       };
     }
 
@@ -76,7 +80,7 @@ export async function updateFoodItem(
 
     if (data.name !== undefined) {
       const name = data.name.trim();
-      const nameLower = name.toLocaleLowerCase("sv-SE");
+      const nameLower = name.toLocaleLowerCase(APP_LOCALE);
 
       // Renames must not collide with another existing item.
       if (nameLower !== String(existing.nameLower ?? "")) {

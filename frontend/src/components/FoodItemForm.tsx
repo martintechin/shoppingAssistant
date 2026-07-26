@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
-import { FoodItem, UNITS } from "../types/shared";
+import { FoodItem } from "../types/shared";
+import { UNITS, t } from "../i18n";
 import { apiDelete, apiPut } from "../utils/api";
 import { formatDate } from "../utils/dates";
 import { Modal } from "./Modal";
@@ -25,7 +26,7 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("Ange ett namn");
+      setError(t("foodForm.emptyName"));
       return;
     }
 
@@ -34,7 +35,7 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
       await apiPut("updateFoodItem", { id: item.id, name: trimmedName, category, unit });
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte spara varan");
+      setError(err instanceof Error ? err.message : t("foodForm.saveFailed"));
       setSubmitting(false);
     }
   }
@@ -45,16 +46,16 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
       await apiDelete("deleteFoodItem", item.id);
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte ta bort varan");
+      setError(err instanceof Error ? err.message : t("foodForm.deleteFailed"));
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title="Redigera vara" onClose={onClose}>
+    <Modal title={t("foodForm.editTitle")} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="food-name">Namn</label>
+          <label htmlFor="food-name">{t("foodForm.nameLabel")}</label>
           <input
             id="food-name"
             type="text"
@@ -64,7 +65,7 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
           />
         </div>
         <div className="form-field">
-          <label htmlFor="food-category">Kategori</label>
+          <label htmlFor="food-category">{t("foodForm.categoryLabel")}</label>
           <select
             id="food-category"
             value={category}
@@ -81,9 +82,9 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
           </select>
         </div>
         <div className="form-field">
-          <label htmlFor="food-unit">Enhet</label>
+          <label htmlFor="food-unit">{t("foodForm.unitLabel")}</label>
           <select id="food-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
-            {!UNITS.includes(unit as any) && <option value={unit}>{unit}</option>}
+            {!UNITS.includes(unit) && <option value={unit}>{unit}</option>}
             {UNITS.map((u) => (
               <option key={u} value={u}>
                 {u}
@@ -93,7 +94,7 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
         </div>
 
         {item.lastBought && (
-          <p className="food-form-meta">Senast köpt: {formatDate(item.lastBought)}</p>
+          <p className="food-form-meta">{t("foodForm.lastBought", { date: formatDate(item.lastBought) })}</p>
         )}
 
         {error && <div className="form-error">{error}</div>}
@@ -106,7 +107,7 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
               onClick={handleDelete}
               disabled={submitting}
             >
-              Bekräfta borttagning
+              {t("foodForm.confirmDelete")}
             </button>
           ) : (
             <button
@@ -114,14 +115,14 @@ export function FoodItemForm({ item, categories, onClose, onSaved }: FoodItemFor
               className="btn-danger-outline"
               onClick={() => setConfirmDelete(true)}
             >
-              Ta bort
+              {t("foodForm.delete")}
             </button>
           )}
           <button type="button" className="btn-secondary" onClick={onClose}>
-            Avbryt
+            {t("foodForm.cancel")}
           </button>
           <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "Sparar..." : "Spara"}
+            {submitting ? t("foodForm.saving") : t("foodForm.save")}
           </button>
         </div>
       </form>

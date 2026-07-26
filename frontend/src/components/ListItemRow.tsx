@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ListItem } from "../types/shared";
 import { getUnitStep } from "../config";
-import { LOCALE } from "../config";
+import { LOCALE, t } from "../i18n";
 
 interface ListItemRowProps {
   item: ListItem;
@@ -47,7 +47,7 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
                 }
               }}
               onBlur={saveNote}
-              placeholder="Skriv en anteckning..."
+              placeholder={t("listItem.notePlaceholder")}
               autoFocus
             />
           </div>
@@ -55,9 +55,9 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
           <button
             className="note-toggle"
             onClick={() => { setDraft(item.note ?? ""); setEditingNote(true); }}
-            aria-label="Redigera anteckning"
+            aria-label={t("listItem.editNote")}
           >
-            {item.note ? item.note : "Lägg till anteckning..."}
+            {item.note ? item.note : t("listItem.addNote")}
           </button>
         )}
       </div>
@@ -66,7 +66,7 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
           className="stepper-btn"
           onClick={() => onQuantity(decrease)}
           disabled={decrease <= 0}
-          aria-label="Minska antal"
+          aria-label={t("listItem.decrease")}
         >
           −
         </button>
@@ -74,12 +74,12 @@ export function ListItemRow({ item, onQuantity, onNote, onDelete }: ListItemRowP
         <button
           className="stepper-btn"
           onClick={() => onQuantity(increase)}
-          aria-label="Öka antal"
+          aria-label={t("listItem.increase")}
         >
           +
         </button>
       </div>
-      <button className="row-delete" onClick={onDelete} aria-label={`Ta bort ${item.name}`}>
+      <button className="row-delete" onClick={onDelete} aria-label={t("listItem.remove", { name: item.name })}>
         ✕
       </button>
     </div>

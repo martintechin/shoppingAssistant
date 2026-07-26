@@ -5,6 +5,7 @@ import { UseShoppingListResult } from "../hooks/useShoppingList";
 import { getCategoryColor, getAllCategories } from "../config";
 import { filterAndRank } from "../utils/text";
 import { formatRelativeDays } from "../utils/dates";
+import { t } from "../i18n";
 import { FoodItemForm } from "./FoodItemForm";
 import { CategoryManager } from "./CategoryManager";
 
@@ -31,14 +32,14 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
   return (
     <div className="foods-view">
       <div className="view-header">
-        <h1>Varor</h1>
+        <h1>{t("foods.title")}</h1>
         <div className="view-header-actions">
-          <span className="view-header-meta">{foodItems.items.length} st</span>
+          <span className="view-header-meta">{t("foods.count", { count: foodItems.items.length })}</span>
           <button
             className="btn-secondary btn-small"
             onClick={() => setManagingCategories(true)}
           >
-            Kategorier
+            {t("foods.categories")}
           </button>
         </div>
       </div>
@@ -48,17 +49,17 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
         className="search-input"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Sök i varudatabasen..."
+        placeholder={t("foods.searchPlaceholder")}
         autoComplete="off"
       />
 
       {foodItems.error && <div className="banner-error">{foodItems.error}</div>}
 
       {foodItems.loading && foodItems.items.length === 0 ? (
-        <div className="empty-state">Laddar varor...</div>
+        <div className="empty-state">{t("foods.loading")}</div>
       ) : shown.length === 0 ? (
         <div className="empty-state">
-          {trimmed ? "Ingen träff." : "Varudatabasen är tom."}
+          {trimmed ? t("foods.noMatch") : t("foods.empty")}
         </div>
       ) : (
         <div className="food-list">
@@ -68,7 +69,7 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
                 <span className="food-card-name">{item.name}</span>
                 <span className="food-card-meta">
                   {item.unit}
-                  {item.lastBought && ` · Köpt ${formatRelativeDays(item.lastBought)}`}
+                  {item.lastBought && ` · ${t("foods.boughtWhen", { when: formatRelativeDays(item.lastBought) })}`}
                 </span>
               </span>
               <span

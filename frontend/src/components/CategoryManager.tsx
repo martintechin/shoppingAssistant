@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { FoodItem, BulkUpdateCategoryResponse } from "../types/shared";
 import { getCategoryColor } from "../config";
 import { apiPut } from "../utils/api";
+import { t } from "../i18n";
 import { Modal } from "./Modal";
 
 interface CategoryManagerProps {
@@ -39,7 +40,7 @@ export function CategoryManager({
     const trimmed = newName.trim();
     if (!trimmed) return;
     if (categories.includes(trimmed)) {
-      setError("Kategorin finns redan");
+      setError(t("catManager.alreadyExists"));
       return;
     }
     setNewName("");
@@ -99,7 +100,7 @@ export function CategoryManager({
       setSelected(new Set());
       setAssignTarget(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte uppdatera");
+      setError(err instanceof Error ? err.message : t("catManager.updateFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -129,9 +130,9 @@ export function CategoryManager({
 
   if (screen === "new") {
     return (
-      <Modal title="Ny kategori" onClose={onClose}>
+      <Modal title={t("catManager.newTitle")} onClose={onClose}>
         <div className="form-field">
-          <label htmlFor="new-cat-name">Namn</label>
+          <label htmlFor="new-cat-name">{t("catManager.nameLabel")}</label>
           <input
             id="new-cat-name"
             type="text"
@@ -145,10 +146,10 @@ export function CategoryManager({
         {error && <div className="form-error">{error}</div>}
         <div className="form-actions">
           <button className="btn-secondary" onClick={() => { setScreen("list"); setError(null); }}>
-            Tillbaka
+            {t("catManager.back")}
           </button>
           <button className="btn-primary" onClick={handleCreateCategory} disabled={!newName.trim()}>
-            Skapa och tilldela varor
+            {t("catManager.createAndAssign")}
           </button>
         </div>
       </Modal>
@@ -156,12 +157,18 @@ export function CategoryManager({
   }
 
   if (screen === "assign" && assignTarget) {
+    const moveLabel = submitting
+      ? t("catManager.saving")
+      : selected.size === 1
+        ? t("catManager.moveOne")
+        : t("catManager.moveMany", { count: selected.size });
+
     return (
-      <Modal title={`Tilldela till "${assignTarget}"`} onClose={onClose}>
+      <Modal title={t("catManager.assignTitle", { name: assignTarget })} onClose={onClose}>
         {assignedItems.length > 0 && (
           <div className="assign-section">
             <h3 className="assign-section-title">
-              Redan i kategorin ({assignedItems.length})
+              {t("catManager.alreadyIn", { count: assignedItems.length })}
             </h3>
             <div className="assign-already">
               {assignedItems.map((item) => (
@@ -172,24 +179,24 @@ export function CategoryManager({
         )}
 
         <div className="assign-section">
-          <h3 className="assign-section-title">Välj varor att flytta hit</h3>
+          <h3 className="assign-section-title">{t("catManager.selectItems")}</h3>
           <input
             type="text"
             className="search-input"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
-            placeholder="Filtrera varor..."
+            placeholder={t("catManager.filterPlaceholder")}
             autoComplete="off"
           />
           <div className="assign-bulk-actions">
             <button className="btn-small btn-secondary" onClick={selectAll}>
-              Markera alla synliga
+              {t("catManager.selectAll")}
             </button>
             <button className="btn-small btn-secondary" onClick={deselectAll}>
-              Avmarkera alla
+              {t("catManager.deselectAll")}
             </button>
             {selected.size > 0 && (
-              <span className="assign-count">{selected.size} valda</span>
+              <span className="assign-count">{t("catManager.selectedCount", { count: selected.size })}</span>
             )}
           </div>
           <div className="assign-list">
@@ -211,7 +218,7 @@ export function CategoryManager({
             ))}
             {filteredItems.length === 0 && (
               <div className="empty-state">
-                {filterQuery.trim() ? "Ingen träff." : "Inga varor att flytta."}
+                {filterQuery.trim() ? t("catManager.noMatch") : t("catManager.noItems")}
               </div>
             )}
           </div>
@@ -220,16 +227,14 @@ export function CategoryManager({
         {error && <div className="form-error">{error}</div>}
         <div className="form-actions">
           <button className="btn-secondary" onClick={() => { setScreen("list"); setError(null); }}>
-            Tillbaka
+            {t("catManager.back")}
           </button>
           <button
             className="btn-primary"
             onClick={submitAssign}
             disabled={submitting || selected.size === 0}
           >
-            {submitting
-              ? "Sparar..."
-              : `Flytta ${selected.size} vara${selected.size !== 1 ? "r" : ""}`}
+            {moveLabel}
           </button>
         </div>
       </Modal>
@@ -237,7 +242,7 @@ export function CategoryManager({
   }
 
   return (
-    <Modal title="Kategorier" onClose={onClose}>
+    <Modal title={t("catManager.title")} onClose={onClose}>
       <div className="category-manager-list">
         {categories.map((cat) => (
           <button
@@ -251,17 +256,17 @@ export function CategoryManager({
             />
             <span className="category-manager-name">{cat}</span>
             <span className="category-manager-count">
-              {countByCategory.get(cat) || 0} varor
+              {t("catManager.itemCount", { count: countByCategory.get(cat) || 0 })}
             </span>
           </button>
         ))}
       </div>
       <div className="form-actions">
         <button className="btn-secondary" onClick={onClose}>
-          Stäng
+          {t("catManager.close")}
         </button>
         <button className="btn-primary" onClick={() => { setScreen("new"); setError(null); setNewName(""); }}>
-          + Ny kategori
+          {t("catManager.newCategory")}
         </button>
       </div>
     </Modal>

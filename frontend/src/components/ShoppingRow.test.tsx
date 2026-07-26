@@ -33,7 +33,7 @@ describe("ShoppingRow", () => {
 
   it("shows the unavailable badge when the store lacks the item", () => {
     render(<ShoppingRow item={item} unavailable={true} onToggle={() => {}} />);
-    expect(screen.getByText("Finns ej här")).toBeInTheDocument();
+    expect(screen.getByText("Not here")).toBeInTheDocument();
   });
 
   it("formats the quantity with the unit", () => {

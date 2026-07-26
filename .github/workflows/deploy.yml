@@ -54,6 +54,7 @@ jobs:
       - name: Deploy Bicep
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
         run: |
           az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
@@ -63,7 +64,8 @@ jobs:
               location="$LOCATION" \
               swaLocation="$SWA_LOCATION" \
               ownerTag="$OWNER_TAG" \
-              jwtSecret="$JWT_SECRET"
+              jwtSecret="$JWT_SECRET" \
+              appLanguage="$APP_LANGUAGE"
 
       - name: Get SWA deployment token
         id: get-token
@@ -100,6 +102,8 @@ jobs:
 
       - name: Install & build Frontend
         working-directory: frontend
+        env:
+          VITE_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
         run: npm ci && npm run build
 
       - name: Test API
@@ -133,12 +137,12 @@ jobs:
 
       - name: Build Frontend
         working-directory: frontend
+        env:
+          VITE_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
         run: npm ci && npm run build
 
       - name: Deploy to Azure Static Web Apps
         env:
-          # Referencing the secret registers its value with the runner, so the
-          # site URL is masked in this job's public logs.
           SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           npx --yes @azure/static-web-apps-cli deploy \
@@ -173,6 +177,8 @@ jobs:
 
       - name: Build Frontend
         working-directory: frontend
+        env:
+          VITE_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
         run: npm ci && npm run build
 
       - name: Deploy to Azure Static Web Apps

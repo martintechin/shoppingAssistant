@@ -3,6 +3,7 @@ import { Store } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseStoresResult } from "../hooks/useStores";
 import { getAllCategories } from "../config";
+import { t } from "../i18n";
 import { StoreForm } from "./StoreForm";
 
 interface StoresViewProps {
@@ -20,30 +21,27 @@ export function StoresView({ stores, foodItems }: StoresViewProps) {
   return (
     <div className="stores-view">
       <div className="view-header">
-        <h1>Butiker</h1>
+        <h1>{t("stores.title")}</h1>
         <button className="btn-primary" onClick={() => setEditing("new")}>
-          + Ny butik
+          {t("stores.newStore")}
         </button>
       </div>
 
       {stores.error && <div className="banner-error">{stores.error}</div>}
 
       {stores.loading && stores.stores.length === 0 ? (
-        <div className="empty-state">Laddar butiker...</div>
+        <div className="empty-state">{t("stores.loading")}</div>
       ) : stores.stores.length === 0 ? (
-        <div className="empty-state">
-          Inga butiker ännu. Lägg till dina vanliga butiker och ange i vilken ordning
-          avdelningarna kommer när du går genom butiken.
-        </div>
+        <div className="empty-state">{t("stores.empty")}</div>
       ) : (
         <div className="store-list">
           {stores.stores.map((store) => (
             <button key={store.id} className="store-card" onClick={() => setEditing(store)}>
               <span className="store-card-name">{store.name}</span>
               <span className="store-card-meta">
-                {store.categoryOrder.length} avdelningar
+                {t("stores.departments", { count: store.categoryOrder.length })}
                 {store.unavailableItems.length > 0 &&
-                  ` · ${store.unavailableItems.length} varor saknas`}
+                  ` · ${t("stores.itemsMissing", { count: store.unavailableItems.length })}`}
               </span>
             </button>
           ))}

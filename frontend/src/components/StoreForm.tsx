@@ -2,12 +2,13 @@ import { useState, FormEvent } from "react";
 import { Store } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { apiDelete, apiPost, apiPut } from "../utils/api";
+import { t } from "../i18n";
 import { Modal } from "./Modal";
 import { CategoryOrderEditor } from "./CategoryOrderEditor";
 import { UnavailablePicker } from "./UnavailablePicker";
 
 interface StoreFormProps {
-  store: Store | null; // null = create new
+  store: Store | null;
   categories: string[];
   foodItems: UseFoodItemsResult;
   onClose: () => void;
@@ -47,13 +48,12 @@ export function StoreForm({ store, categories, foodItems, onClose, onSaved }: St
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("Ange ett namn på butiken");
+      setError(t("storeForm.emptyName"));
       return;
     }
 
     setSubmitting(true);
     try {
-      // Only keep unavailable ids that still exist in the food database.
       const unavailableItems = [...unavailable].filter((id) => foodItems.byId.has(id));
       if (store) {
         await apiPut("updateStore", {
@@ -71,7 +71,7 @@ export function StoreForm({ store, categories, foodItems, onClose, onSaved }: St
       }
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte spara butiken");
+      setError(err instanceof Error ? err.message : t("storeForm.saveFailed"));
       setSubmitting(false);
     }
   }
@@ -83,34 +83,34 @@ export function StoreForm({ store, categories, foodItems, onClose, onSaved }: St
       await apiDelete("deleteStore", store.id);
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunde inte ta bort butiken");
+      setError(err instanceof Error ? err.message : t("storeForm.deleteFailed"));
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal title={store ? "Redigera butik" : "Ny butik"} onClose={onClose}>
+    <Modal title={store ? t("storeForm.editTitle") : t("storeForm.newTitle")} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="store-name">Namn</label>
+          <label htmlFor="store-name">{t("storeForm.nameLabel")}</label>
           <input
             id="store-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="t.ex. ICA Maxi Häggvik"
+            placeholder={t("storeForm.namePlaceholder")}
             autoComplete="off"
             autoFocus={!store}
           />
         </div>
 
         <div className="form-field">
-          <label>Avdelningsordning (din väg genom butiken)</label>
+          <label>{t("storeForm.departmentOrder")}</label>
           <CategoryOrderEditor order={order} onChange={setOrder} />
         </div>
 
         <div className="form-field">
-          <label>Varor som saknas i butiken</label>
+          <label>{t("storeForm.unavailableItems")}</label>
           <UnavailablePicker
             foodItems={foodItems.items}
             selected={unavailable}
@@ -129,7 +129,7 @@ export function StoreForm({ store, categories, foodItems, onClose, onSaved }: St
                 onClick={handleDelete}
                 disabled={submitting}
               >
-                Bekräfta borttagning
+                {t("storeForm.confirmDelete")}
               </button>
             ) : (
               <button
@@ -137,14 +137,14 @@ export function StoreForm({ store, categories, foodItems, onClose, onSaved }: St
                 className="btn-danger-outline"
                 onClick={() => setConfirmDelete(true)}
               >
-                Ta bort
+                {t("storeForm.delete")}
               </button>
             ))}
           <button type="button" className="btn-secondary" onClick={onClose}>
-            Avbryt
+            {t("storeForm.cancel")}
           </button>
           <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "Sparar..." : "Spara"}
+            {submitting ? t("storeForm.saving") : t("storeForm.save")}
           </button>
         </div>
       </form>

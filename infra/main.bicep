@@ -21,6 +21,10 @@ param ownerTag string = 'shoppingassistant'
 @secure()
 param jwtSecret string
 
+@description('Application language (en or sv)')
+@allowed(['en', 'sv'])
+param appLanguage string = 'en'
+
 var storageAccountName = 'st${take(replace(appName, '-', ''), 9)}${uniqueString(resourceGroup().id)}'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
@@ -95,6 +99,7 @@ resource swaAppSettings 'Microsoft.Web/staticSites/config@2023-01-01' = {
   properties: {
     AZURE_STORAGE_CONNECTION_STRING: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     JWT_SECRET: jwtSecret
+    APP_LANGUAGE: appLanguage
   }
 }
 

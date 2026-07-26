@@ -1,10 +1,9 @@
-import { LOCALE } from "../config";
+import { LOCALE, SORT_LOCALE } from "../i18n";
 
 export function normalize(value: string): string {
   return value.trim().toLocaleLowerCase(LOCALE);
 }
 
-/** Match rank: 0 = prefix match, 1 = substring match, -1 = no match. */
 export function matchRank(name: string, query: string): number {
   const normalizedName = normalize(name);
   const normalizedQuery = normalize(query);
@@ -14,7 +13,6 @@ export function matchRank(name: string, query: string): number {
   return -1;
 }
 
-/** Filter and rank items for autocomplete: prefix matches before substring matches. */
 export function filterAndRank<T>(
   items: T[],
   query: string,
@@ -26,7 +24,7 @@ export function filterAndRank<T>(
     .filter((entry) => entry.rank >= 0)
     .sort(
       (a, b) =>
-        a.rank - b.rank || getName(a.item).localeCompare(getName(b.item), "sv")
+        a.rank - b.rank || getName(a.item).localeCompare(getName(b.item), SORT_LOCALE)
     )
     .slice(0, limit)
     .map((entry) => entry.item);
