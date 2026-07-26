@@ -1,6 +1,6 @@
 # Inköpslistan (shoppingAssistant)
 
-A mobile-friendly grocery shopping app for the family, built as an Azure Static Web App. Same architecture and design as [familyCalendar](https://github.com/martintechin/familyCalendar).
+A mobile-friendly grocery shopping app for the family, built as an Azure Static Web App.
 
 ## Features
 
@@ -60,8 +60,6 @@ npm run test:frontend
 ## Deployment
 
 The app deploys to an Azure Static Web App with a linked Functions API and Azure Table Storage, provisioned by Bicep (`infra/main.bicep`) and driven by GitHub Actions (`.github/workflows/deploy.yml`). All deployment targets are configurable — a fork sets a handful of repo Secrets and Variables and never edits the workflow.
-
-> If you are opening this repo (or a fork) to the public, read **[PUBLISHING.md](./PUBLISHING.md)** first — it covers rotating the JWT secret and scrubbing the old deployment hostname from git history.
 
 ### Prerequisites
 

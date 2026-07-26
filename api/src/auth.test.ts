@@ -37,8 +37,8 @@ describe("createDeviceToken / JWT claims", () => {
   it("rejects a token signed for a different audience (cross-app confusion)", async () => {
     const foreign = await new SignJWT({ deviceId: "device-123" })
       .setProtectedHeader({ alg: "HS256" })
-      .setIssuer("familycalendar")
-      .setAudience("familycalendar")
+      .setIssuer("some-other-app")
+      .setAudience("some-other-app")
       .setIssuedAt()
       .setExpirationTime("1h")
       .sign(secretBytes());
