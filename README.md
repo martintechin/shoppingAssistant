@@ -140,20 +140,19 @@ az staticwebapp secrets list --name swa-shoppingassistant \
 
 From here, **every push to `main` builds, tests, and deploys** the app.
 
-### 6. Seed production data
+### 6. Seed food database
 
-Seeding runs from your workstation (the scripts aren't packaged into the deploy). Point them at the production storage account:
+The first activation code is generated automatically during infrastructure provisioning (step 4) and shown in the workflow run summary. To seed the food database, point the script at the production storage account:
 
 ```bash
 export AZURE_STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
   --resource-group rg-shoppingassistant-prod \
   --name <storageAccountName> --query connectionString -o tsv)
 
-npm run seed:codes    # prints one-time activation codes
 npm run seed:food     # ~180 grocery items (idempotent)
 ```
 
-The storage account name is generated (`st…` + a hash); find it with `az storage account list -g rg-shoppingassistant-prod --query "[].name" -o tsv`. **If `AZURE_STORAGE_CONNECTION_STRING` is unset the scripts silently seed the local Azurite emulator instead** — export it first.
+The storage account name is generated (`st…` + a hash); find it with `az storage account list -g rg-shoppingassistant-prod --query "[].name" -o tsv`. **If `AZURE_STORAGE_CONNECTION_STRING` is unset the script silently seeds the local Azurite emulator instead** — export it first.
 
 ### Forking / renaming
 
@@ -164,7 +163,6 @@ Beyond the repo Variables above, personalize:
 
 ### Managing devices and codes
 
-- **Revoke a device**: in Azure Storage Explorer, open the `DeviceAuth` table, find the row in the `device` partition, set its `status` to `revoked`. The per-request check rejects it on the next call.
-- **New activation codes**: re-run `npm run seed:codes` (against production, per step 6). Codes are single-use and printed only once — store them securely.
+After the first device is activated, manage devices and generate new activation codes from **Settings → Devices** in the app. To revoke a device manually, open the `DeviceAuth` table in Azure Storage Explorer, find the row in the `device` partition, and set its `status` to `revoked`.
 
 Secrets live only in GitHub Actions secrets and Azure app settings — never in the repo.

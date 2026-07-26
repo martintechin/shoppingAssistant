@@ -52,11 +52,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy Bicep
+        id: bicep
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           APP_LANGUAGE: ${{ vars.APP_LANGUAGE || 'en' }}
         run: |
-          az deployment group create \
+          output=$(az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
             --template-file infra/main.bicep \
             --parameters \
@@ -64,7 +65,69 @@ jobs:
               location="$LOCATION" \
               swaLocation="$SWA_LOCATION" \
               jwtSecret="$JWT_SECRET" \
-              appLanguage="$APP_LANGUAGE"
+              appLanguage="$APP_LANGUAGE" \
+            --query "properties.outputs" -o json)
+
+          echo "storage-account=$(echo "$output" | jq -r '.storageAccountName.value')" >> "$GITHUB_OUTPUT"
+          echo "app-url=$(echo "$output" | jq -r '.staticWebAppUrl.value')" >> "$GITHUB_OUTPUT"
+
+      - name: Seed first activation code
+        run: |
+          STORAGE_ACCOUNT="${{ steps.bicep.outputs.storage-account }}"
+          APP_URL="${{ steps.bicep.outputs.app-url }}"
+
+          CONN_STR=$(az storage account show-connection-string \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$STORAGE_ACCOUNT" \
+            --query connectionString -o tsv)
+
+          # Skip if an active code already exists (idempotent on re-deploy)
+          EXISTING=$(az storage entity query \
+            --table-name DeviceAuth \
+            --connection-string "$CONN_STR" \
+            --filter "PartitionKey eq 'code' and status eq 'active'" \
+            --select RowKey \
+            --num-results 1 \
+            --query "items[0].RowKey" -o tsv 2>/dev/null || true)
+
+          if [ -n "$EXISTING" ] && [ "$EXISTING" != "None" ]; then
+            echo "### Activation Code" >> "$GITHUB_STEP_SUMMARY"
+            echo "An active activation code already exists — skipping generation." >> "$GITHUB_STEP_SUMMARY"
+            echo "To generate a new code, use **Settings → Devices** in the app." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Generate code: XXXX-XXXX-XXXX from charset ABCDEFGHJKLMNPQRSTUVWXYZ23456789
+          CHARSET="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+          CODE=""
+          for g in 1 2 3; do
+            SEGMENT=""
+            for c in 1 2 3 4; do
+              RAND=$(od -An -tu4 -N4 /dev/urandom | tr -d ' ')
+              INDEX=$(( RAND % 32 ))
+              SEGMENT="${SEGMENT}${CHARSET:$INDEX:1}"
+            done
+            [ -n "$CODE" ] && CODE="${CODE}-${SEGMENT}" || CODE="$SEGMENT"
+          done
+
+          az storage entity insert \
+            --table-name DeviceAuth \
+            --connection-string "$CONN_STR" \
+            --entity PartitionKey=code RowKey="$CODE" status=active
+
+          {
+            echo "### First Activation Code"
+            echo ""
+            echo "Your app is ready at: **${APP_URL}**"
+            echo ""
+            echo "Use this code to activate your first device:"
+            echo ""
+            echo "\`\`\`"
+            echo "${CODE}"
+            echo "\`\`\`"
+            echo ""
+            echo "> This code is single-use. After activating, generate additional codes from **Settings → Devices** in the app."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Get SWA deployment token
         id: get-token
