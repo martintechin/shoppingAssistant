@@ -137,4 +137,39 @@ describe("updateRecipe", () => {
     const result = await updateRecipe(req, createMockContext());
     expect(result.status).toBe(400);
   });
+
+  it("stamps lastAddedToList when markAddedToList is true", async () => {
+    const before = Date.now();
+    const req = createMockRequest({
+      method: "PUT",
+      body: { id: "recipe-1", markAddedToList: true },
+    });
+    const result = await updateRecipe(req, createMockContext());
+    expect(result.status).toBe(200);
+
+    const stamped = (result.jsonBody as any).recipe.lastAddedToList as string;
+    expect(new Date(stamped).getTime()).toBeGreaterThanOrEqual(before);
+    expect(__get("Recipes", "recipe", "recipe-1")?.lastAddedToList).toBe(stamped);
+    // other fields untouched
+    expect((result.jsonBody as any).recipe.name).toBe("Tacos");
+  });
+
+  it("leaves lastAddedToList alone when markAddedToList is false", async () => {
+    const req = createMockRequest({
+      method: "PUT",
+      body: { id: "recipe-1", markAddedToList: false, name: "Fish Tacos" },
+    });
+    const result = await updateRecipe(req, createMockContext());
+    expect(result.status).toBe(200);
+    expect((result.jsonBody as any).recipe.lastAddedToList).toBeUndefined();
+  });
+
+  it("rejects a non-boolean markAddedToList", async () => {
+    const req = createMockRequest({
+      method: "PUT",
+      body: { id: "recipe-1", markAddedToList: "yes" },
+    });
+    const result = await updateRecipe(req, createMockContext());
+    expect(result.status).toBe(400);
+  });
 });
