@@ -28,11 +28,21 @@ export async function updateRecipe(
     if (!data || typeof data.id !== "string" || data.id.length === 0) {
       return { status: 400, jsonBody: { error: "Missing or invalid 'id' field" } };
     }
-    if (data.name === undefined && data.ingredients === undefined) {
+    if (
+      data.name === undefined &&
+      data.ingredients === undefined &&
+      data.markAddedToList === undefined
+    ) {
       return {
         status: 400,
-        jsonBody: { error: "At least one of 'name' or 'ingredients' must be provided" },
+        jsonBody: {
+          error:
+            "At least one of 'name', 'ingredients' or 'markAddedToList' must be provided",
+        },
       };
+    }
+    if (data.markAddedToList !== undefined && typeof data.markAddedToList !== "boolean") {
+      return { status: 400, jsonBody: { error: "Invalid 'markAddedToList': must be a boolean" } };
     }
     if (
       data.name !== undefined &&
@@ -84,6 +94,8 @@ export async function updateRecipe(
     };
     if (data.name !== undefined) update.name = data.name.trim();
     if (data.ingredients !== undefined) update.ingredients = JSON.stringify(data.ingredients);
+    // Stamped server-side so the "shopped for" date can't drift with device clocks
+    if (data.markAddedToList === true) update.lastAddedToList = new Date().toISOString();
 
     await client.updateEntity(update as any, "Merge");
 

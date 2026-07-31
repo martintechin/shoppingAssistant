@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Recipe, AddListItemResponse } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
 import { UseShoppingListResult } from "../hooks/useShoppingList";
-import { apiPost, apiDelete } from "../utils/api";
+import { apiPost, apiPut, apiDelete } from "../utils/api";
 import { getCategoryColor, stepQuantity } from "../config";
 import { formatRelativeDays } from "../utils/dates";
 import { t } from "../i18n";
@@ -14,6 +14,7 @@ interface RecipeDetailProps {
   list: UseShoppingListResult;
   onEdit: () => void;
   onDelete: () => void;
+  onAddedToList: () => void;
   onBack: () => void;
 }
 
@@ -23,6 +24,7 @@ export function RecipeDetail({
   list,
   onEdit,
   onDelete,
+  onAddedToList,
   onBack,
 }: RecipeDetailProps) {
   const [selected, setSelected] = useState<Set<string>>(
@@ -76,6 +78,13 @@ export function RecipeDetail({
         quantity: qty,
       });
     }
+    // Stamp the "shopped for" date; a failure here must not mask a successful add
+    try {
+      await apiPut("updateRecipe", { id: recipe.id, markAddedToList: true });
+      onAddedToList();
+    } catch (err) {
+      console.error("Failed to stamp recipe as added to list:", err);
+    }
     list.refresh();
     setAdding(false);
     setAdded(true);
@@ -115,6 +124,11 @@ export function RecipeDetail({
       </div>
 
       <h1 className="recipe-detail-title">{recipe.name}</h1>
+      <p className="recipe-detail-lastadded">
+        {recipe.lastAddedToList
+          ? t("recipes.lastAdded", { when: formatRelativeDays(recipe.lastAddedToList) })
+          : t("recipes.neverAdded")}
+      </p>
 
       {deleteError && <div className="banner-error">{deleteError}</div>}
 

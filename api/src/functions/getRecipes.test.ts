@@ -58,4 +58,31 @@ describe("getRecipes", () => {
     ]);
     expect(body.recipes[1].name).toBe("Ärtsoppa");
   });
+
+  it("exposes lastAddedToList and treats the empty sentinel as unset", async () => {
+    __seed("Recipes", [
+      {
+        partitionKey: "recipe",
+        rowKey: "r1",
+        name: "Tacos",
+        ingredients: JSON.stringify([{ foodItemId: "f1", quantity: 1 }]),
+        createdAt: "2026-07-01T00:00:00.000Z",
+        lastAddedToList: "2026-07-28T18:00:00.000Z",
+      },
+      {
+        partitionKey: "recipe",
+        rowKey: "r2",
+        name: "Ugnspannkaka",
+        ingredients: JSON.stringify([{ foodItemId: "f2", quantity: 1 }]),
+        createdAt: "2026-07-02T00:00:00.000Z",
+        lastAddedToList: "",
+      },
+    ]);
+
+    const req = createMockRequest({ method: "GET" });
+    const result = await getRecipes(req, createMockContext());
+    const body = result.jsonBody as any;
+    expect(body.recipes[0].lastAddedToList).toBe("2026-07-28T18:00:00.000Z");
+    expect(body.recipes[1].lastAddedToList).toBeUndefined();
+  });
 });

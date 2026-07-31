@@ -28,7 +28,7 @@ Arrays are JSON-stringified strings; timestamps are ISO strings; row keys are `$
 - **FoodItems** (pk `item`): `name`, `nameLower` (locale-aware lowercase via `APP_LOCALE`, for duplicate checks — recompute on rename!), `category`, `unit`, `lastBought?`, `createdAt`.
 - **Stores** (pk `store`): `name`, `categoryOrder` (JSON string[] — the walking route), `unavailableItems` (JSON string[] of FoodItems row keys), `createdAt`.
 - **ShoppingList** (pk `list`, single partition so `submitTransaction` batch-deletes work): `foodItemId`, denormalized `name`/`category`/`unit`, `quantity`, `checked`, `addedAt`, `checkedAt?`, `prevLastBought?`.
-- **Recipes** (pk `recipe`): `name`, `ingredients` (JSON array of `{ foodItemId, quantity }`), `createdAt`.
+- **Recipes** (pk `recipe`): `name`, `ingredients` (JSON array of `{ foodItemId, quantity }`), `createdAt`, `lastAddedToList?` (ISO, `""` = unset sentinel).
 - **DeviceAuth**: partitions `code` (activation codes), `device` (revocable devices), `ratelimit` (IP windows).
 
 ## Key behaviors & invariants
@@ -38,6 +38,7 @@ Arrays are JSON-stringified strings; timestamps are ISO strings; row keys are `$
 - **categoryOrder is never validated against `CATEGORIES` server-side.** New config categories are reconciled client-side: appended at sort time (`utils/sorting.ts`) and merged into the editor when a store is edited (`StoreForm.initialOrder`).
 - **Deleting a food item** eagerly strips it from every store's `unavailableItems`; shopping-list rows survive on their denormalized copies (stale name after rename is accepted).
 - Recently-bought warning (`RECENTLY_BOUGHT_DAYS = 4` in `frontend/src/config.ts`) is based on ≤60s-stale polled data — accepted.
+- **lastAddedToList**: stamped server-side on the recipe (via `updateRecipe` with `markAddedToList: true`) after `RecipeDetail` pushes ingredients onto the list, so "which dishes have we shopped for" survives device clock skew. Shown on every recipe card and in the detail header; drives the **Recent** sort in `RecipesView` (`sortRecipes()` in `utils/sorting.ts` — never-added recipes sink to the bottom alphabetically). The chosen sort mode (`alpha` | `recent`) is persisted in localStorage.
 - **Quantity stepping**: units with base step 1 (st/pcs, förp/pkg) support fractional quantities below 1 — the sequence is 1/4, 1/2, 1, 2, 3, … The quantity label is tappable for direct numeric entry in list items and recipes. Logic lives in `stepQuantity()` in `frontend/src/config.ts`.
 
 ## Language / i18n
