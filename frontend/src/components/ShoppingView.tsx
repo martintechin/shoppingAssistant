@@ -93,7 +93,7 @@ export function ShoppingView({ list, stores }: ShoppingViewProps) {
                   className="category-dot"
                   style={{ backgroundColor: getCategoryColor(category) }}
                 />
-                {category}
+                {category || t("list.unknownCategory")}
               </h2>
               {items.map((item) => (
                 <ShoppingRow

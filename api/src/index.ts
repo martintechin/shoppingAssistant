@@ -26,3 +26,4 @@ import "./functions/getRecipes.js";
 import "./functions/storeRecipe.js";
 import "./functions/updateRecipe.js";
 import "./functions/deleteRecipe.js";
+import "./functions/quickAddListItem.js";

@@ -10,13 +10,14 @@ interface AddItemBarProps {
   listItems: ListItem[];
   onSelect: (item: FoodItem) => void;
   onCreateNew: (name: string) => void;
+  onQuickAdd: (name: string) => void;
 }
 
 function isRecentlyBought(item: FoodItem): boolean {
   return daysSince(item.lastBought) <= RECENTLY_BOUGHT_DAYS;
 }
 
-export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemBarProps) {
+export function AddItemBar({ items, listItems, onSelect, onCreateNew, onQuickAdd }: AddItemBarProps) {
   const [query, setQuery] = useState("");
   const [confirming, setConfirming] = useState<FoodItem | null>(null);
 
@@ -45,6 +46,12 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
 
   function handleCreate() {
     onCreateNew(trimmed);
+    setQuery("");
+    setConfirming(null);
+  }
+
+  function handleQuickAdd() {
+    onQuickAdd(trimmed);
     setQuery("");
     setConfirming(null);
   }
@@ -117,9 +124,14 @@ export function AddItemBar({ items, listItems, onSelect, onCreateNew }: AddItemB
                 </button>
               ))}
               {!hasExactMatch && (
-                <button className="suggestion suggestion-create" onClick={handleCreate}>
-                  {t("addItem.create", { name: trimmed })}
-                </button>
+                <>
+                  <button className="suggestion suggestion-quick-add" onClick={handleQuickAdd}>
+                    {t("addItem.quickAdd", { name: trimmed })}
+                  </button>
+                  <button className="suggestion suggestion-create" onClick={handleCreate}>
+                    {t("addItem.create", { name: trimmed })}
+                  </button>
+                </>
               )}
             </>
           )}
