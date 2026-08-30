@@ -88,11 +88,39 @@ function parseCsvLine(line: string): string[] {
 }
 
 export function downloadCsv(csv: string, filename: string): void {
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const BOM = "﻿";
+  const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Read a CSV file as text, handling encoding correctly.
+ *
+ * File.text() always decodes as UTF-8. CSV files saved by Excel on Windows
+ * are often encoded in the system ANSI codepage (e.g. Windows-1252 for
+ * Swedish/Western European locales). Non-ASCII bytes like 0xF6 (ö) are
+ * invalid UTF-8 and become U+FFFD (�).
+ *
+ * Strategy:
+ * 1. Read as UTF-8 first (covers UTF-8 with or without BOM).
+ * 2. If replacement characters appear, re-read with Windows-1252 fallback.
+ */
+export async function readCsvFile(file: File): Promise<string> {
+  const utf8Text = await file.text();
+  if (!utf8Text.includes("�")) {
+    // Valid UTF-8 (with or without BOM — the BOM is stripped by .text())
+    return utf8Text;
+  }
+  // Re-read as Windows-1252 (covers Latin-1 superset used by Western European Windows)
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file, "windows-1252");
+  });
 }
