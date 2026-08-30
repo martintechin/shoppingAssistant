@@ -6,7 +6,7 @@ import { getCategoryColor, getAllCategories } from "../config";
 import { filterAndRank } from "../utils/text";
 import { formatRelativeDays } from "../utils/dates";
 import { apiPost } from "../utils/api";
-import { foodItemsToCsv, parseFoodItemsCsv, downloadCsv } from "../utils/csv";
+import { foodItemsToCsv, parseFoodItemsCsv, downloadCsv, readCsvFile } from "../utils/csv";
 import { t } from "../i18n";
 import { FoodItemForm } from "./FoodItemForm";
 import { CategoryManager } from "./CategoryManager";
@@ -43,7 +43,7 @@ export function FoodsView({ foodItems, list }: FoodsViewProps) {
     setImporting(true);
     setImportMsg(null);
     try {
-      const text = await file.text();
+      const text = await readCsvFile(file);
       const items = parseFoodItemsCsv(text);
       if (items.length === 0) {
         setImportMsg(t("foods.importFailed"));
