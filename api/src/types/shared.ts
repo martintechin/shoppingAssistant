@@ -240,6 +240,8 @@ export interface Recipe {
   name: string;
   ingredients: RecipeIngredient[];
   createdAt: string;
+  /** ISO timestamp of the last time this recipe's ingredients were added to the shopping list */
+  lastAddedToList?: string;
 }
 
 export interface RecipesResponse {
@@ -260,6 +262,8 @@ export interface UpdateRecipeRequest {
   id: string;
   name?: string;
   ingredients?: RecipeIngredient[];
+  /** When true the server stamps `lastAddedToList` with the current time */
+  markAddedToList?: boolean;
 }
 
 export interface UpdateRecipeResponse {
