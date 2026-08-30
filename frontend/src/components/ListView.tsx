@@ -3,6 +3,7 @@ import {
   AddListItemResponse,
   FoodItem,
   ListItem,
+  QuickAddListItemResponse,
   StoreFoodItemResponse,
 } from "../types/shared";
 import { UseFoodItemsResult } from "../hooks/useFoodItems";
@@ -66,6 +67,16 @@ export function ListView({ foodItems, list }: ListViewProps) {
     list.refresh();
   }
 
+  async function quickAdd(name: string) {
+    setActionError(null);
+    try {
+      await apiPost<QuickAddListItemResponse>("quickAddListItem", { name });
+      list.refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : t("list.couldNotAdd"));
+    }
+  }
+
   async function changeQuantity(item: ListItem, quantity: number) {
     list.mutate((items) =>
       items.map((i) => (i.id === item.id ? { ...i, quantity } : i))
@@ -125,6 +136,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
         listItems={list.items}
         onSelect={addToList}
         onCreateNew={setCreateName}
+        onQuickAdd={quickAdd}
       />
 
       {actionError && <div className="banner-error">{actionError}</div>}
@@ -143,7 +155,7 @@ export function ListView({ foodItems, list }: ListViewProps) {
                   className="category-dot"
                   style={{ backgroundColor: getCategoryColor(category) }}
                 />
-                {category}
+                {category || t("list.unknownCategory")}
               </h2>
               {items.map((item) => (
                 <ListItemRow

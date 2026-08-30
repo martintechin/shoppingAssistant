@@ -31,11 +31,11 @@ describe("AddItemBar", () => {
     vi.useRealTimers();
   });
 
-  function setup(onSelect = vi.fn(), onCreateNew = vi.fn()) {
+  function setup(onSelect = vi.fn(), onCreateNew = vi.fn(), onQuickAdd = vi.fn()) {
     render(
-      <AddItemBar items={items} listItems={[]} onSelect={onSelect} onCreateNew={onCreateNew} />
+      <AddItemBar items={items} listItems={[]} onSelect={onSelect} onCreateNew={onCreateNew} onQuickAdd={onQuickAdd} />
     );
-    return { onSelect, onCreateNew };
+    return { onSelect, onCreateNew, onQuickAdd };
   }
 
   it("shows ranked suggestions while typing", () => {
@@ -83,6 +83,15 @@ describe("AddItemBar", () => {
     });
     fireEvent.click(screen.getByText('+ Create "Kombucha"'));
     expect(onCreateNew).toHaveBeenCalledWith("Kombucha");
+  });
+
+  it("offers to quick add an unknown item", () => {
+    const { onQuickAdd } = setup();
+    fireEvent.change(screen.getByPlaceholderText("Add item..."), {
+      target: { value: "Kombucha" },
+    });
+    fireEvent.click(screen.getByText(/Quick add "Kombucha"/));
+    expect(onQuickAdd).toHaveBeenCalledWith("Kombucha");
   });
 
   it("hides the create row when an exact match exists", () => {

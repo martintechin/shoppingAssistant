@@ -142,6 +142,7 @@ const sv: Language = {
     "addItem.addAnyway": "Lägg till ändå",
     "addItem.cancel": "Avbryt",
     "addItem.create": "+ Skapa \"{name}\"",
+    "addItem.quickAdd": "⚡ Snabblägg \"{name}\"",
     "addItem.onList": "på listan",
     "addItem.boughtWhen": "Köpt {when}",
 
@@ -151,6 +152,7 @@ const sv: Language = {
     "list.couldNotAdd": "Kunde inte lägga till varan",
     "list.couldNotRemove": "Kunde inte ta bort varan",
     "list.checkedSection": "Avprickade",
+    "list.unknownCategory": "Okänt",
 
     // List item row
     "listItem.notePlaceholder": "Skriv en anteckning...",

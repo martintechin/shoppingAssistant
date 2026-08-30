@@ -142,6 +142,7 @@ const en: Language = {
     "addItem.addAnyway": "Add anyway",
     "addItem.cancel": "Cancel",
     "addItem.create": "+ Create \"{name}\"",
+    "addItem.quickAdd": "⚡ Quick add \"{name}\"",
     "addItem.onList": "on list",
     "addItem.boughtWhen": "Bought {when}",
 
@@ -151,6 +152,7 @@ const en: Language = {
     "list.couldNotAdd": "Could not add the item",
     "list.couldNotRemove": "Could not remove the item",
     "list.checkedSection": "Checked off",
+    "list.unknownCategory": "Unknown",
 
     // List item row
     "listItem.notePlaceholder": "Write a note...",

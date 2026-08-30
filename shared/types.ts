@@ -124,6 +124,19 @@ export interface AddListItemRequest {
   note?: string;
 }
 
+export interface QuickAddListItemRequest {
+  name: string;
+  category?: string;
+  unit?: string;
+  quantity?: number;
+  note?: string;
+}
+
+export interface QuickAddListItemResponse {
+  success: boolean;
+  item: ListItem;
+}
+
 export interface AddListItemResponse {
   success: boolean;
   item: ListItem;
