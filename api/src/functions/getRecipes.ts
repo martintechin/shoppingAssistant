@@ -18,11 +18,14 @@ function parseIngredients(value: unknown): RecipeIngredient[] {
 }
 
 export function toRecipe(entity: any): Recipe {
+  // Merge can't delete properties, so "" is the unset sentinel for lastAddedToList
+  const lastAddedToList = String(entity.lastAddedToList ?? "");
   return {
     id: String(entity.rowKey),
     name: String(entity.name ?? ""),
     ingredients: parseIngredients(entity.ingredients),
     createdAt: String(entity.createdAt ?? ""),
+    ...(lastAddedToList ? { lastAddedToList } : {}),
   };
 }
 

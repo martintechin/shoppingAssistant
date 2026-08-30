@@ -1,4 +1,4 @@
-import { ListItem } from "../types/shared";
+import { ListItem, Recipe } from "../types/shared";
 import { CATEGORIES, SORT_LOCALE } from "../i18n";
 
 export function categoryComparator(
@@ -26,6 +26,25 @@ export function sortByStoreOrder(items: ListItem[], categoryOrder: string[]): Li
     (a, b) =>
       compareCategories(a.category, b.category) || a.name.localeCompare(b.name, SORT_LOCALE)
   );
+}
+
+export type RecipeSortMode = "alpha" | "recent";
+
+/**
+ * "alpha" sorts by name; "recent" puts the most recently shopped-for recipes
+ * first and parks the never-shopped ones at the bottom, alphabetically.
+ */
+export function sortRecipes(recipes: Recipe[], mode: RecipeSortMode): Recipe[] {
+  const byName = (a: Recipe, b: Recipe) => a.name.localeCompare(b.name, SORT_LOCALE);
+  if (mode === "alpha") return [...recipes].sort(byName);
+  return [...recipes].sort((a, b) => {
+    const addedA = a.lastAddedToList ?? "";
+    const addedB = b.lastAddedToList ?? "";
+    if (addedA && addedB) return addedB.localeCompare(addedA) || byName(a, b);
+    if (addedA) return -1;
+    if (addedB) return 1;
+    return byName(a, b);
+  });
 }
 
 export function groupByCategory(items: ListItem[]): Array<[string, ListItem[]]> {
